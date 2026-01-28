@@ -2,27 +2,27 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Book Imposer - Ultra Safe</title>
+    <title>Book Imposer V5 - Deep Copy</title>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #1a1a2e; color: #fff; }
         .card { background: #ffffff; color: #333; padding: 2.5rem; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; width: 90%; max-width: 450px; }
         .upload-area { border: 3px dashed #3498db; padding: 30px; border-radius: 15px; margin: 20px 0; cursor: pointer; background: #f9f9f9; }
-        button { background: #27ae60; color: white; border: none; padding: 15px 25px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 1.1rem; font-weight: bold; }
-        #status { margin-top: 20px; font-weight: bold; color: #e67e22; }
+        button { background: #e67e22; color: white; border: none; padding: 15px 25px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 1.1rem; font-weight: bold; }
+        #status { margin-top: 20px; font-weight: bold; color: #34495e; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h1>📖 Book Imposer v4</h1>
-    <p>Imposizione Vettoriale Garantita</p>
+    <h1>📖 Book Imposer V5</h1>
+    <p>Tecnica Deep Copy (Anti-Errore)</p>
     <div class="upload-area" onclick="document.getElementById('pdfInput').click()">
         <input type="file" id="pdfInput" accept="application/pdf" style="display:none">
-        <span>Trascina qui il file PDF</span>
+        <span>Seleziona un PDF "difficile"</span>
     </div>
-    <button id="processBtn">GENERA LIBRETTO</button>
-    <div id="status">Seleziona un file per iniziare.</div>
+    <button id="processBtn">GENERA IMPOSIZIONE</button>
+    <div id="status">Pronto per l'elaborazione.</div>
 </div>
 
 <script>
@@ -34,79 +34,29 @@
         if (fileInput.files.length === 0) return alert("Seleziona un file!");
 
         try {
-            status.innerText = "⏳ Analisi vettoriale...";
+            status.innerText = "⏳ Analisi profonda...";
             const arrayBuffer = await fileInput.files[0].arrayBuffer();
-            const srcDoc = await PDFDocument.load(arrayBuffer);
+            
+            // Carica il documento originale ignorando errori minori
+            const srcDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
             const outDoc = await PDFDocument.create();
 
-            // Formato A3 standard (punti)
             const A3_W = 1190.55; 
             const A3_H = 841.89;
 
-            // Pareggio pagine a multiplo di 4
-            let totalPages = srcDoc.getPageCount();
-            while (totalPages % 4 !== 0) {
+            // Pareggio pagine multiplo di 4
+            let total = srcDoc.getPageCount();
+            while (total % 4 !== 0) {
                 srcDoc.addPage([srcDoc.getPage(0).getWidth(), srcDoc.getPage(0).getHeight()]);
-                totalPages = srcDoc.getPageCount();
+                total = srcDoc.getPageCount();
             }
 
-            // IMPORTAZIONE SICURA
-            // Usiamo embedPages che trasforma le pagine in "oggetti vettoriali" pronti all'uso
-            const embeddedPages = await outDoc.embedPages(srcDoc.getPages());
+            // Invece di embedPages singole, copiamo l'intero array di pagine
+            // Questo metodo è più tollerante agli errori di contenuto
+            const copiedPages = await outDoc.copyPages(srcDoc, srcDoc.getPageIndices());
             
             status.innerText = "✂️ Imposizione in corso...";
-            const numSheets = totalPages / 2; // Ogni foglio A3 ha 2 facciate
+            const numSheets = total / 2;
 
             for (let i = 0; i < numSheets; i++) {
-                const sheet = outDoc.addPage([A3_W, A3_H]);
-                
-                let leftIdx, rightIdx;
-                // Logica Saddle Stitch (Libretto)
-                if (i % 2 === 0) { // Fronte
-                    leftIdx = totalPages - 1 - i;
-                    rightIdx = i;
-                } else { // Retro
-                    leftIdx = i;
-                    rightIdx = totalPages - 1 - i;
-                }
-
-                const drawPageSafe = (embPage, isLeft) => {
-                    // Calcolo scala automatica per far stare l'A4 nell'A3
-                    const scale = Math.min((A3_W / 2) / embPage.width, A3_H / embPage.height) * 0.94;
-                    const dW = embPage.width * scale;
-                    const dH = embPage.height * scale;
-
-                    const xPos = isLeft 
-                        ? (A3_W / 2 - dW) / 2 
-                        : (A3_W / 2) + (A3_W / 2 - dW) / 2;
-                    const yPos = (A3_H - dH) / 2;
-
-                    sheet.drawPage(embPage, {
-                        x: xPos,
-                        y: yPos,
-                        width: dW,
-                        height: dH
-                    });
-                };
-
-                drawPageSafe(embeddedPages[leftIdx], true);
-                drawPageSafe(embeddedPages[rightIdx], false);
-            }
-
-            status.innerText = "💾 Compilazione PDF...";
-            const pdfBytes = await outDoc.save();
-            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = "imposizione_libretto.pdf";
-            link.click();
-            status.innerText = "✅ Completato con successo!";
-
-        } catch (e) {
-            console.error(e);
-            status.innerText = "❌ Errore critico: " + e.message;
-        }
-    });
-</script>
-</body>
-</html>
+                const sheet = outDoc
