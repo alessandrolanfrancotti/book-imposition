@@ -2,21 +2,20 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Book Imposer V6 - Final</title>
+    <title>Book Imposer V7</title>
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
     <style>
         body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f0f0f0; }
         .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); text-align: center; width: 350px; }
         .upload-box { border: 2px dashed #007bff; padding: 20px; margin: 20px 0; border-radius: 10px; cursor: pointer; }
-        button { background: #007bff; color: white; border: none; padding: 15px 25px; border-radius: 5px; width: 100%; cursor: pointer; font-size: 16px; font-weight: bold; }
-        button:active { background: #0056b3; }
-        #log { margin-top: 15px; font-size: 12px; color: #666; text-align: left; background: #eee; padding: 10px; border-radius: 5px; display: none; }
+        button { background: #28a745; color: white; border: none; padding: 15px 25px; border-radius: 5px; width: 100%; cursor: pointer; font-size: 16px; font-weight: bold; }
+        #log { margin-top: 15px; font-size: 12px; color: #444; text-align: left; background: #eee; padding: 10px; border-radius: 5px; max-height: 150px; overflow-y: auto; display: none; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h1>📖 Impositore V6</h1>
+    <h1>📖 Impositore V7</h1>
     <div class="upload-box" onclick="document.getElementById('fileIn').click()">
         <input type="file" id="fileIn" accept="application/pdf" style="display:none">
         <span>Seleziona File PDF</span>
@@ -30,41 +29,48 @@
         const logDiv = document.getElementById('log');
         logDiv.style.display = 'block';
         logDiv.innerHTML += "> " + msg + "<br>";
-        console.log(msg);
+        logDiv.scrollTop = logDiv.scrollHeight;
     };
 
     document.getElementById('goBtn').onclick = async () => {
         const input = document.getElementById('fileIn');
-        if (!input.files[0]) return alert("Seleziona un file prima!");
+        if (!input.files[0]) return alert("Seleziona un file!");
 
         try {
-            log("Inizio elaborazione...");
             const { PDFDocument } = PDFLib;
-            
+            log("Caricamento PDF...");
             const bytes = await input.files[0].arrayBuffer();
-            log("File caricato in memoria.");
-
-            const src = await PDFDocument.load(bytes);
-            const out = await PDFDocument.create();
-            log("Documenti PDF inizializzati.");
+            const srcDoc = await PDFDocument.load(bytes);
+            const outDoc = await PDFDocument.create();
 
             const A3_W = 1190.55; 
             const A3_H = 841.89;
 
-            // Pareggio pagine
-            let total = src.getPageCount();
+            let total = srcDoc.getPageCount();
             while (total % 4 !== 0) {
-                src.addPage([595, 842]); // Aggiunge A4 bianco
-                total = src.getPageCount();
+                srcDoc.addPage([595.28, 841.89]); // Aggiunge A4 standard
+                total = srcDoc.getPageCount();
             }
-            log("Pagine totali (pareggiate a 4): " + total);
+            log("Pagine totali: " + total);
 
-            const copied = await out.copyPages(src, src.getPageIndices());
+            // IMPORTANTE: Trasformiamo subito le pagine in oggetti con dimensioni sicure
+            log("Embedding pagine...");
+            const pages = srcDoc.getPages();
+            const embeddedPages = [];
             
+            for (const p of pages) {
+                // Se getWidth() fallisce o è NaN, forziamo A4 (595.28)
+                const w = p.getWidth() || 595.28;
+                const h = p.getHeight() || 841.89;
+                const emb = await outDoc.embedPage(p);
+                // Salviamo l'oggetto con dimensioni garantite
+                embeddedPages.push({ page: emb, width: w, height: h });
+            }
+
             for (let i = 0; i < total / 2; i++) {
-                const sheet = out.addPage([A3_W, A3_H]);
-                
+                const sheet = outDoc.addPage([A3_W, A3_H]);
                 let lIdx, rIdx;
+                
                 if (i % 2 === 0) { // Fronte
                     lIdx = total - 1 - i;
                     rIdx = i;
@@ -73,38 +79,34 @@
                     rIdx = total - 1 - i;
                 }
 
-                // Disegno semplificato senza embedding per evitare il crash
-                const draw = (idx, isLeft) => {
-                    const p = copied[idx];
-                    const scale = Math.min((A3_W/2)/p.getWidth(), A3_H/p.getHeight()) * 0.94;
-                    const x = isLeft ? (A3_W/2 - p.getWidth()*scale)/2 : (A3_W/2) + (A3_W/2 - p.getWidth()*scale)/2;
-                    sheet.drawPage(p, {
-                        x: x,
-                        y: (A3_H - p.getHeight()*scale)/2,
-                        width: p.getWidth()*scale,
-                        height: p.getHeight()*scale
-                    });
+                const drawSafe = (obj, isLeft) => {
+                    const scale = Math.min((A3_W/2)/obj.width, A3_H/obj.height) * 0.94;
+                    const dW = obj.width * scale;
+                    const dH = obj.height * scale;
+                    const x = isLeft ? (A3_W/2 - dW)/2 : (A3_W/2) + (A3_W/2 - dW)/2;
+                    const y = (A3_H - dH)/2;
+
+                    sheet.drawPage(obj.page, { x, y, width: dW, height: dH });
                 };
 
-                draw(lIdx, true);
-                draw(rIdx, false);
+                drawSafe(embeddedPages[lIdx], true);
+                drawSafe(embeddedPages[rIdx], false);
                 log("Creata facciata " + (i + 1));
             }
 
-            log("Generazione file finale...");
-            const pdfBytes = await out.save();
+            log("Salvataggio...");
+            const pdfBytes = await outDoc.save();
             const blob = new Blob([pdfBytes], { type: 'application/pdf' });
             const url = URL.createObjectURL(blob);
-            
             const a = document.createElement('a');
             a.href = url;
-            a.download = "libretto_imposto.pdf";
+            a.download = "libretto_v7.pdf";
             a.click();
-            log("✅ DOWNLOAD AVVIATO!");
+            log("✅ COMPLETATO!");
 
         } catch (e) {
             log("❌ ERRORE: " + e.message);
-            alert("Si è verificato un errore: " + e.message);
+            console.error(e);
         }
     };
 </script>
