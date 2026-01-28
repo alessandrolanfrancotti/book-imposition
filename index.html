@@ -2,61 +2,111 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Book Imposer V5 - Deep Copy</title>
-    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <title>Book Imposer V6 - Final</title>
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #1a1a2e; color: #fff; }
-        .card { background: #ffffff; color: #333; padding: 2.5rem; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; width: 90%; max-width: 450px; }
-        .upload-area { border: 3px dashed #3498db; padding: 30px; border-radius: 15px; margin: 20px 0; cursor: pointer; background: #f9f9f9; }
-        button { background: #e67e22; color: white; border: none; padding: 15px 25px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 1.1rem; font-weight: bold; }
-        #status { margin-top: 20px; font-weight: bold; color: #34495e; }
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f0f0f0; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); text-align: center; width: 350px; }
+        .upload-box { border: 2px dashed #007bff; padding: 20px; margin: 20px 0; border-radius: 10px; cursor: pointer; }
+        button { background: #007bff; color: white; border: none; padding: 15px 25px; border-radius: 5px; width: 100%; cursor: pointer; font-size: 16px; font-weight: bold; }
+        button:active { background: #0056b3; }
+        #log { margin-top: 15px; font-size: 12px; color: #666; text-align: left; background: #eee; padding: 10px; border-radius: 5px; display: none; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h1>📖 Book Imposer V5</h1>
-    <p>Tecnica Deep Copy (Anti-Errore)</p>
-    <div class="upload-area" onclick="document.getElementById('pdfInput').click()">
-        <input type="file" id="pdfInput" accept="application/pdf" style="display:none">
-        <span>Seleziona un PDF "difficile"</span>
+    <h1>📖 Impositore V6</h1>
+    <div class="upload-box" onclick="document.getElementById('fileIn').click()">
+        <input type="file" id="fileIn" accept="application/pdf" style="display:none">
+        <span>Seleziona File PDF</span>
     </div>
-    <button id="processBtn">GENERA IMPOSIZIONE</button>
-    <div id="status">Pronto per l'elaborazione.</div>
+    <button id="goBtn">GENERA LIBRETTO</button>
+    <div id="log"></div>
 </div>
 
 <script>
-    const { PDFDocument, rgb } = PDFLib;
+    const log = (msg) => {
+        const logDiv = document.getElementById('log');
+        logDiv.style.display = 'block';
+        logDiv.innerHTML += "> " + msg + "<br>";
+        console.log(msg);
+    };
 
-    document.getElementById('processBtn').addEventListener('click', async () => {
-        const fileInput = document.getElementById('pdfInput');
-        const status = document.getElementById('status');
-        if (fileInput.files.length === 0) return alert("Seleziona un file!");
+    document.getElementById('goBtn').onclick = async () => {
+        const input = document.getElementById('fileIn');
+        if (!input.files[0]) return alert("Seleziona un file prima!");
 
         try {
-            status.innerText = "⏳ Analisi profonda...";
-            const arrayBuffer = await fileInput.files[0].arrayBuffer();
+            log("Inizio elaborazione...");
+            const { PDFDocument } = PDFLib;
             
-            // Carica il documento originale ignorando errori minori
-            const srcDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
-            const outDoc = await PDFDocument.create();
+            const bytes = await input.files[0].arrayBuffer();
+            log("File caricato in memoria.");
+
+            const src = await PDFDocument.load(bytes);
+            const out = await PDFDocument.create();
+            log("Documenti PDF inizializzati.");
 
             const A3_W = 1190.55; 
             const A3_H = 841.89;
 
-            // Pareggio pagine multiplo di 4
-            let total = srcDoc.getPageCount();
+            // Pareggio pagine
+            let total = src.getPageCount();
             while (total % 4 !== 0) {
-                srcDoc.addPage([srcDoc.getPage(0).getWidth(), srcDoc.getPage(0).getHeight()]);
-                total = srcDoc.getPageCount();
+                src.addPage([595, 842]); // Aggiunge A4 bianco
+                total = src.getPageCount();
+            }
+            log("Pagine totali (pareggiate a 4): " + total);
+
+            const copied = await out.copyPages(src, src.getPageIndices());
+            
+            for (let i = 0; i < total / 2; i++) {
+                const sheet = out.addPage([A3_W, A3_H]);
+                
+                let lIdx, rIdx;
+                if (i % 2 === 0) { // Fronte
+                    lIdx = total - 1 - i;
+                    rIdx = i;
+                } else { // Retro
+                    lIdx = i;
+                    rIdx = total - 1 - i;
+                }
+
+                // Disegno semplificato senza embedding per evitare il crash
+                const draw = (idx, isLeft) => {
+                    const p = copied[idx];
+                    const scale = Math.min((A3_W/2)/p.getWidth(), A3_H/p.getHeight()) * 0.94;
+                    const x = isLeft ? (A3_W/2 - p.getWidth()*scale)/2 : (A3_W/2) + (A3_W/2 - p.getWidth()*scale)/2;
+                    sheet.drawPage(p, {
+                        x: x,
+                        y: (A3_H - p.getHeight()*scale)/2,
+                        width: p.getWidth()*scale,
+                        height: p.getHeight()*scale
+                    });
+                };
+
+                draw(lIdx, true);
+                draw(rIdx, false);
+                log("Creata facciata " + (i + 1));
             }
 
-            // Invece di embedPages singole, copiamo l'intero array di pagine
-            // Questo metodo è più tollerante agli errori di contenuto
-            const copiedPages = await outDoc.copyPages(srcDoc, srcDoc.getPageIndices());
+            log("Generazione file finale...");
+            const pdfBytes = await out.save();
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
             
-            status.innerText = "✂️ Imposizione in corso...";
-            const numSheets = total / 2;
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "libretto_imposto.pdf";
+            a.click();
+            log("✅ DOWNLOAD AVVIATO!");
 
-            for (let i = 0; i < numSheets; i++) {
-                const sheet = outDoc
+        } catch (e) {
+            log("❌ ERRORE: " + e.message);
+            alert("Si è verificato un errore: " + e.message);
+        }
+    };
+</script>
+</body>
+</html>
