@@ -2,31 +2,26 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Book Imposer - Pro</title>
+    <title>Book Imposer - Fix</title>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #eceff1; }
-        .card { background: white; padding: 2.5rem; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 100%; max-width: 450px; }
-        h1 { color: #2c3e50; margin-bottom: 0.5rem; }
-        .upload-area { border: 2px dashed #3498db; padding: 20px; border-radius: 10px; margin: 20px 0; background: #f8fbff; }
-        button { background: #3498db; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: background 0.3s; }
-        button:hover { background: #2980b9; }
-        button:disabled { background: #bdc3c7; }
-        #status { margin-top: 15px; font-size: 0.9rem; color: #7f8c8d; }
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f0f2f5; }
+        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 400px; }
+        .upload-area { border: 2px dashed #3498db; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        button { background: #3498db; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 1rem; }
+        #status { margin-top: 15px; font-size: 0.85rem; color: #555; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h1>📚 Book Imposer</h1>
-    <p>Trasforma il tuo PDF in un libretto A3</p>
-    
+    <p>Versione Corretta</p>
     <div class="upload-area">
         <input type="file" id="pdfInput" accept="application/pdf">
     </div>
-
-    <button id="processBtn">Genera Libretto (2-up)</button>
-    <p id="status">Pronto per l'elaborazione</p>
+    <button id="processBtn">Genera Libretto A3</button>
+    <p id="status">In attesa del file...</p>
 </div>
 
 <script>
@@ -36,78 +31,80 @@
         const fileInput = document.getElementById('pdfInput');
         const status = document.getElementById('status');
         
-        if (fileInput.files.length === 0) {
-            alert("Per favore, seleziona un file PDF!");
-            return;
-        }
+        if (fileInput.files.length === 0) return alert("Seleziona un PDF");
 
         try {
-            status.innerText = "⏳ Lettura file...";
-            const file = fileInput.files[0];
-            const arrayBuffer = await file.arrayBuffer();
+            status.innerText = "⏳ Caricamento...";
+            const arrayBuffer = await fileInput.files[0].arrayBuffer();
             const srcDoc = await PDFDocument.load(arrayBuffer);
             const outDoc = await PDFDocument.create();
             
-            // Definiamo il foglio A3 orizzontale
-            const A3_W = 1190.55; // 420mm in punti
-            const A3_H = 841.89;  // 297mm in punti
+            // A3 orizzontale in punti
+            const A3_W = 1190.55; 
+            const A3_H = 841.89;
 
-            // Prendiamo tutte le pagine
-            const pageIndices = srcDoc.getPageIndices();
-            let totalPages = pageIndices.length;
-
-            // Per un libretto servono multipli di 4. Aggiungiamo pagine bianche se necessario.
+            // 1. Gestione pagine multiple di 4
+            let totalPages = srcDoc.getPageCount();
             while (totalPages % 4 !== 0) {
                 srcDoc.addPage([srcDoc.getPage(0).getWidth(), srcDoc.getPage(0).getHeight()]);
                 totalPages++;
             }
 
-            const pages = await outDoc.copyPages(srcDoc, srcDoc.getPageIndices());
-            status.innerText = "✂️ Imposizione in corso...";
+            // 2. Importazione pagine (Fondamentale!)
+            const embeddedPages = await outDoc.embedPages(srcDoc.getPages());
+            status.innerText = "✂️ Imposizione...";
 
-            // LOGICA LIBRETTO (Saddle Stitch)
-            // Esempio 8 pagine: Foglio 1 Fronte (8,1), Retro (2,7)...
-            for (let i = 0; i < totalPages / 2; i++) {
+            // 3. Ciclo di creazione segnature (2 pagine per facciata)
+            // Ogni foglio fisico ha 2 facciate (fronte e retro)
+            const numFacciate = totalPages / 2; 
+
+            for (let i = 0; i < numFacciate; i++) {
                 const sheet = outDoc.addPage([A3_W, A3_H]);
                 
                 let leftIdx, rightIdx;
-                if (i % 2 === 0) { // Fronte
-                    leftIdx = totalPages - 1 - i;
+                // Logica libretto: Esterna + Interna
+                if (i % 2 === 0) { // Fronte (es. Pag 8 e Pag 1)
+                    leftIdx = totalPages - 1 - (i);
                     rightIdx = i;
-                } else { // Retro
+                } else { // Retro (es. Pag 2 e Pag 7)
                     leftIdx = i;
-                    rightIdx = totalPages - 1 - i;
+                    rightIdx = totalPages - 1 - (i);
                 }
 
-                // Posizionamento
-                const pLeft = pages[leftIdx];
-                const pRight = pages[rightIdx];
+                const pLeft = embeddedPages[leftIdx];
+                const pRight = embeddedPages[rightIdx];
+
+                // Calcolo scala per farle stare nel mezzo del foglio (opzionale se sono già A4)
+                const scale = Math.min((A3_W/2) / pLeft.width, A3_H / pLeft.height, 1);
 
                 // Pagina Sinistra
                 sheet.drawPage(pLeft, {
-                    x: (A3_W / 2 - pLeft.getWidth()) / 2,
-                    y: (A3_H - pLeft.getHeight()) / 2
+                    x: (A3_W / 2 - (pLeft.width * scale)) / 2,
+                    y: (A3_H - (pLeft.height * scale)) / 2,
+                    width: pLeft.width * scale,
+                    height: pLeft.height * scale
                 });
 
                 // Pagina Destra
                 sheet.drawPage(pRight, {
-                    x: (A3_W / 2) + (A3_W / 2 - pRight.getWidth()) / 2,
-                    y: (A3_H - pRight.getHeight()) / 2
+                    x: (A3_W / 2) + (A3_W / 2 - (pRight.width * scale)) / 2,
+                    y: (A3_H - (pRight.height * scale)) / 2,
+                    width: pRight.width * scale,
+                    height: pRight.height * scale
                 });
             }
 
-            status.innerText = "💾 Salvataggio...";
             const pdfBytes = await outDoc.save();
             const blob = new Blob([pdfBytes], { type: 'application/pdf' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = "libretto_imposto.pdf";
+            link.download = "libretto_ok.pdf";
             link.click();
-            status.innerText = "✅ Completato! Controlla i download.";
+            status.innerText = "✅ Successo!";
 
-        } catch (error) {
-            console.error(error);
-            status.innerText = "❌ Errore: " + error.message;
+        } catch (e) {
+            console.error(e);
+            status.innerText = "❌ Errore tecnico: " + e.message;
         }
     });
 </script>
