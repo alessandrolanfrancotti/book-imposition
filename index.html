@@ -2,28 +2,27 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Book Imposer - Professional</title>
+    <title>Book Imposer - Final Fix</title>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #2c3e50; color: #fff; }
-        .card { background: #ffffff; color: #333; padding: 2.5rem; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); text-align: center; width: 90%; max-width: 450px; }
-        .upload-area { border: 3px dashed #3498db; padding: 30px; border-radius: 15px; margin: 20px 0; transition: 0.3s; cursor: pointer; }
-        .upload-area:hover { background: #f1f9ff; }
-        button { background: #e74c3c; color: white; border: none; padding: 15px 25px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 1.1rem; font-weight: bold; }
-        #status { margin-top: 20px; font-weight: bold; color: #34495e; }
+        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #1a1a2e; color: #fff; }
+        .card { background: #ffffff; color: #333; padding: 2.5rem; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; width: 90%; max-width: 450px; }
+        .upload-area { border: 3px dashed #3498db; padding: 30px; border-radius: 15px; margin: 20px 0; cursor: pointer; background: #f9f9f9; }
+        button { background: #27ae60; color: white; border: none; padding: 15px 25px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 1.1rem; font-weight: bold; }
+        #status { margin-top: 20px; font-weight: bold; color: #e67e22; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h1>📖 Book Imposer</h1>
-    <p>Crea il tuo libretto A3 pronto per la stampa</p>
+    <h1>📖 Book Imposer v3</h1>
+    <p>Imposizione Libretto A3 (Saddle Stitch)</p>
     <div class="upload-area" onclick="document.getElementById('pdfInput').click()">
         <input type="file" id="pdfInput" accept="application/pdf" style="display:none">
-        <span>Seleziona o trascina il PDF</span>
+        <span>Clicca qui per caricare il PDF</span>
     </div>
-    <button id="processBtn">GENERA PDF IMPOSTO</button>
-    <div id="status">In attesa del file...</div>
+    <button id="processBtn">GENERA LIBRETTO</button>
+    <div id="status">Pronto.</div>
 </div>
 
 <script>
@@ -35,78 +34,76 @@
         if (fileInput.files.length === 0) return alert("Seleziona un file!");
 
         try {
-            status.innerText = "⏳ Analisi PDF...";
+            status.innerText = "⏳ Caricamento e analisi...";
             const arrayBuffer = await fileInput.files[0].arrayBuffer();
             const srcDoc = await PDFDocument.load(arrayBuffer);
+            
+            // Creiamo il documento di output
             const outDoc = await PDFDocument.create();
-
-            // A3 Orizzontale (punti)
             const A3_W = 1190.55; 
             const A3_H = 841.89;
 
-            // Arrotonda a multiplo di 4 aggiungendo pagine bianche
-            let totalPages = srcDoc.getPageCount();
-            while (totalPages % 4 !== 0) {
+            // 1. Pareggio pagine (multiplo di 4)
+            let pageIndices = srcDoc.getPageIndices();
+            while (pageIndices.length % 4 !== 0) {
                 srcDoc.addPage([srcDoc.getPage(0).getWidth(), srcDoc.getPage(0).getHeight()]);
-                totalPages++;
+                pageIndices = srcDoc.getPageIndices();
             }
 
-            // Copia le pagine dal documento sorgente a quello di destinazione
-            const copiedPages = await outDoc.copyPages(srcDoc, srcDoc.getPageIndices());
-            status.innerText = "✍️ Disegno segnature e crocini...";
+            // 2. EMBEDDING: Trasformiamo le pagine in oggetti grafici disegnabili
+            status.innerText = "✂️ Elaborazione grafica...";
+            const embeddedPages = await outDoc.embedPages(srcDoc.getPages());
+            
+            const total = embeddedPages.length;
+            const numSheets = total / 2; // Ogni foglio A3 ha 2 facciate (fronte/retro)
 
-            const numFacciate = totalPages / 2;
-
-            for (let i = 0; i < numFacciate; i++) {
+            for (let i = 0; i < numSheets; i++) {
                 const sheet = outDoc.addPage([A3_W, A3_H]);
                 
+                // Calcolo indici per Saddle Stitch
                 let leftIdx, rightIdx;
                 if (i % 2 === 0) { // Fronte
-                    leftIdx = totalPages - 1 - i;
+                    leftIdx = total - 1 - i;
                     rightIdx = i;
                 } else { // Retro
                     leftIdx = i;
-                    rightIdx = totalPages - 1 - i;
+                    rightIdx = total - 1 - i;
                 }
 
-                const drawPageInHalf = (page, isLeft) => {
-                    const pageWidth = page.getWidth();
-                    const pageHeight = page.getHeight();
-                    const scale = Math.min((A3_W / 2) / pageWidth, A3_H / pageHeight, 0.95);
+                const drawOnSheet = (embPage, side) => {
+                    // Ridimensiona per far stare due A4 in un A3 con un po' di margine
+                    const scale = Math.min((A3_W / 2) / embPage.width, A3_H / embPage.height) * 0.92;
+                    const drawWidth = embPage.width * scale;
+                    const drawHeight = embPage.height * scale;
                     
-                    const xPos = isLeft 
-                        ? (A3_W / 2 - (pageWidth * scale)) / 2 
-                        : (A3_W / 2) + (A3_W / 2 - (pageWidth * scale)) / 2;
-                    const yPos = (A3_H - (pageHeight * scale)) / 2;
+                    const xPos = (side === 'left') 
+                        ? (A3_W / 2 - drawWidth) / 2 
+                        : (A3_W / 2) + (A3_W / 2 - drawWidth) / 2;
+                    const yPos = (A3_H - drawHeight) / 2;
 
-                    sheet.drawPage(page, {
-                        x: xPos,
-                        y: yPos,
-                        width: pageWidth * scale,
-                        height: pageHeight * scale
+                    sheet.drawPage(embPage, {
+                        x: xPos, y: yPos,
+                        width: drawWidth, height: drawHeight
                     });
 
-                    // DISEGNO CROCINI DI TAGLIO (Semplificati)
-                    const lineLen = 15;
-                    const offset = 5;
-                    const color = rgb(0.1, 0.1, 0.1);
-                    
-                    // Crocino alto sinistra della pagina
-                    sheet.drawLine({ start: { x: xPos - offset, y: yPos + pageHeight*scale }, end: { x: xPos - offset - lineLen, y: yPos + pageHeight*scale }, thickness: 0.5, color });
-                    sheet.drawLine({ start: { x: xPos, y: yPos + pageHeight*scale + offset }, end: { x: xPos, y: yPos + pageHeight*scale + offset + lineLen }, thickness: 0.5, color });
+                    // Aggiunta automatica crocini di taglio base
+                    const cSize = 10;
+                    sheet.drawLine({ start: {x: xPos, y: yPos - 5}, end: {x: xPos, y: yPos - 5 - cSize}, thickness: 0.5, color: rgb(0,0,0) });
+                    sheet.drawLine({ start: {x: xPos - 5, y: yPos}, end: {x: xPos - 5 - cSize, y: yPos}, thickness: 0.5, color: rgb(0,0,0) });
                 };
 
-                drawPageInHalf(copiedPages[leftIdx], true);
-                drawPageInHalf(copiedPages[rightIdx], false);
+                drawOnSheet(embeddedPages[leftIdx], 'left');
+                drawOnSheet(embeddedPages[rightIdx], 'right');
             }
 
+            status.innerText = "💾 Generazione file...";
             const pdfBytes = await outDoc.save();
             const blob = new Blob([pdfBytes], { type: 'application/pdf' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = "imposizione_professionale.pdf";
+            link.download = "booklet_imposition_ready.pdf";
             link.click();
-            status.innerText = "✅ Pronto al download!";
+            status.innerText = "✅ Completato!";
 
         } catch (e) {
             console.error(e);
