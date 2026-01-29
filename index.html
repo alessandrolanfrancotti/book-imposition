@@ -107,24 +107,55 @@
 
     function autoCalculateSignatures() {
         if (!loadedPdf) return alert("Prima carica un file PDF!");
-        let pages = loadedPdf.getPageCount();
+        let total = loadedPdf.getPageCount();
+        
+        // Pareggio a multiplo di 4 se necessario
+        if (total % 4 !== 0) {
+            let original = total;
+            total = Math.ceil(total / 4) * 4;
+            writeLog(`Attenzione: PDF da ${original} pag. pareggiato a ${total} per imposizione.`);
+        }
+
         let plan = [];
-        
-        // Logica: priorità ai 16, poi 8, poi 4
-        while (pages >= 16) { plan.push(16); pages -= 16; }
-        if (pages >= 8) { plan.push(8); pages -= 8; }
-        if (pages >= 4) { plan.push(4); pages -= 4; }
-        if (pages > 0) { plan.push(4); writeLog("Nota: Aggiunte pagine bianche per chiudere l'ultimo quartino."); }
-        
+        let tempTotal = total;
+
+        // LOGICA EDITORIALE V10
+        while (tempTotal > 0) {
+            if (tempTotal >= 32) {
+                // Se abbiamo molto margine, andiamo di sedicesimi standard
+                plan.push(16);
+                tempTotal -= 16;
+            } else if (tempTotal === 20) {
+                // Caso 68 pag -> 16 + 4 (Accavallato)
+                plan.push(20);
+                tempTotal = 0;
+            } else if (tempTotal === 24) {
+                // Caso 72 pag -> 8 (debole) + 16 (forte)
+                plan.push(8, 16);
+                tempTotal = 0;
+            } else if (tempTotal === 28) {
+                // Caso 76 pag -> 12 (debole) + 16 (forte)
+                plan.push(12, 16);
+                tempTotal = 0;
+            } else if (tempTotal === 16) {
+                plan.push(16);
+                tempTotal = 0;
+            } else {
+                // Residui (es. libri molto piccoli o finali particolari)
+                plan.push(tempTotal);
+                tempTotal = 0;
+            }
+        }
+
         document.getElementById('sigInput').value = plan.join(', ');
-        writeLog(`Piano calcolato: ${plan.join(', ')}`);
+        writeLog(`Piano editoriale calcolato: ${plan.join(', ')}`);
     }
 
     document.getElementById('runBtn').onclick = async () => {
         if (!loadedPdf) return alert("Seleziona un file!");
 
         try {
-            writeLog("Avvio imposizione...");
+            writeLog("Avvio imposizione professionale...");
             const { PDFDocument } = PDFLib;
             const outDoc = await PDFDocument.create();
 
@@ -144,23 +175,31 @@
 
             const sigPlan = document.getElementById('sigInput').value.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
             
-            // Embedding per evitare l'errore NaN e mantenere i vettori
             const embeddedPages = await outDoc.embedPages(loadedPdf.getPages());
             let totalProcessed = 0;
 
             for (const sigSize of sigPlan) {
-                writeLog(`Generazione segnatura ${sigSize}...`);
+                writeLog(`Generazione Segnatura da ${sigSize}...`);
+                
+                // i cicla sulle facciate del foglio (ogni foglio = 2 pagine della segnatura)
                 for (let i = 0; i < sigSize / 2; i++) {
                     const sheet = outDoc.addPage([sheetW, sheetH]);
                     
-                    let lIdx = (i % 2 === 0) ? (totalProcessed + sigSize) - 1 - i : totalProcessed + i;
-                    let rIdx = (i % 2 === 0) ? totalProcessed + i : (totalProcessed + sigSize) - 1 - i;
+                    let lIdx, rIdx;
+                    // Calcolo indici per Saddle Stitch (anche per accavallati da 20, 12, etc)
+                    if (i % 2 === 0) { // Fronte
+                        lIdx = (totalProcessed + sigSize) - 1 - i;
+                        rIdx = totalProcessed + i;
+                    } else { // Retro
+                        lIdx = totalProcessed + i;
+                        rIdx = (totalProcessed + sigSize) - 1 - i;
+                    }
 
                     const draw = (idx, side) => {
-                        if (idx >= embeddedPages.length) return; // Pagina bianca
+                        if (idx >= embeddedPages.length) return; // Pagina bianca se fuori range
                         const p = embeddedPages[idx];
                         
-                        // Centratura 1:1 basata sul formato libro finito
+                        // Posizionamento 1:1 centrato sul formato chiuso
                         const x = (side === 'left') 
                             ? (sheetW / 2) - (gutter / 2) - bookW + (bookW - p.width)/2
                             : (sheetW / 2) + (gutter / 2) + (bookW - p.width)/2;
@@ -180,9 +219,9 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "imposizione_v9.pdf";
+            a.download = "imposizione_professionale_V10.pdf";
             a.click();
-            writeLog("✅ COMPLETATO!");
+            writeLog("✅ FILE GENERATO!");
 
         } catch (e) {
             writeLog(`❌ ERRORE: ${e.message}`);
