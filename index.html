@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Book Imposer Pro V25 - Standard Clean</title>
+    <title>Book Imposer Pro V26 - Editorial Logic</title>
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; display: flex; justify-content: center; padding: 20px; margin: 0; }
@@ -25,27 +25,25 @@
 <body>
 
 <div class="panel">
-    <h1>📖 Book Imposer Pro V25</h1>
+    <h1>📖 Book Imposer Pro V26</h1>
     
     <div class="section">
-        <span class="section-title">1. Configurazione Stampa</span>
+        <span class="section-title">1. Configurazione Libro</span>
         <div class="grid">
             <div>
-                <label>Formato Foglio Macchina</label>
+                <label>Foglio Macchina</label>
                 <select id="sheetSelect" onchange="toggleCustomSheet(); checkFit();">
-                    <option value="450,320">SRA3 (450x320 mm)</option>
-                    <option value="500,700">50x70 cm</option>
                     <option value="700,1000">70x100 cm</option>
-                    <option value="420,297">A3 (420x297 mm)</option>
+                    <option value="500,700">50x70 cm</option>
+                    <option value="450,320">SRA3 (450x320 mm)</option>
                     <option value="custom">-- PERSONALIZZA --</option>
                 </select>
             </div>
             <div>
-                <label>Modalità Imposizione</label>
+                <label>Formato Segnatura</label>
                 <select id="modeSelect" onchange="runAutoCalculate(); checkFit();">
-                    <option value="accavallato" selected>Quartini accavallati (2-up)</option>
-                    <option value="16esimo_foglio">Solo 16esimi (4x2)</option>
-                    <option value="8avo_foglio">Solo 8avi (2x2)</option>
+                    <option value="16esimo">Libro in 16esimi (Standard)</option>
+                    <option value="8avo">Libro in 8avi</option>
                 </select>
             </div>
         </div>
@@ -53,22 +51,22 @@
             <div><label>L mm</label><input type="number" id="customW" oninput="checkFit()"></div>
             <div><label>A mm</label><input type="number" id="customH" oninput="checkFit()"></div>
         </div>
-        <div id="monitor">> In attesa di PDF...</div>
+        <div id="monitor">> In attesa di file...</div>
     </div>
 
     <div class="section">
-        <span class="section-title">2. Piano Segnature (Auto)</span>
-        <label>Sequenza Pagine</label>
+        <span class="section-title">2. Piano di Caricamento Segnature</span>
+        <label>Sequenza (Generata automaticamente)</label>
         <input type="text" id="sigInput" value="">
     </div>
 
     <div class="upload-zone" onclick="document.getElementById('pdfFile').click()">
         <input type="file" id="pdfFile" accept="application/pdf" style="display:none">
-        <span id="fileStatus">Trascina o clicca per caricare il PDF del Libro</span>
+        <span id="fileStatus">Carica il PDF editoriale</span>
     </div>
 
-    <button id="runBtn">Genera Imposizione Professional</button>
-    <div id="log">Pronto per il caricamento.</div>
+    <button id="runBtn">Genera Imposizione per Rilegatura</button>
+    <div id="log">Pronto.</div>
 </div>
 
 <script>
@@ -85,28 +83,25 @@
         const monitor = document.getElementById('monitor');
         const mode = document.getElementById('modeSelect').value;
         if (!loadedPdf) return;
-        let sW, sH;
-        if (document.getElementById('sheetSelect').value === 'custom') {
-            sW = parseFloat(document.getElementById('customW').value) || 0;
-            sH = parseFloat(document.getElementById('customH').value) || 0;
-        } else { [sW, sH] = document.getElementById('sheetSelect').value.split(',').map(Number); }
+        let [sW, sH] = (document.getElementById('sheetSelect').value === 'custom') 
+            ? [parseFloat(document.getElementById('customW').value), parseFloat(document.getElementById('customH').value)]
+            : document.getElementById('sheetSelect').value.split(',').map(Number);
         
         const firstPage = loadedPdf.getPages()[0];
         const pW = ptToMm(firstPage.getWidth());
         const pH = ptToMm(firstPage.getHeight());
         
-        let cols = 2, rows = 1;
-        if (mode === '16esimo_foglio') { cols = 4; rows = 2; }
-        else if (mode === '8avo_foglio') { cols = 2; rows = 2; }
+        let cols = (mode === '16esimo') ? 4 : 2;
+        let rows = 2;
 
         let reqW = pW * cols;
         let reqH = pH * rows;
 
         if (sW >= reqW && sH >= reqH) {
-            monitor.innerHTML = `> OK | Ingombro Segnatura: ${reqW.toFixed(1)}x${reqH.toFixed(1)} mm`;
+            monitor.innerHTML = `> OK | Segnatura: ${reqW.toFixed(1)}x${reqH.toFixed(1)} mm`;
             monitor.className = "monitor-ok";
         } else {
-            monitor.innerHTML = `> ERRORE | Richiesto: ${reqW.toFixed(1)}x${reqH.toFixed(1)} mm`;
+            monitor.innerHTML = `> ERRORE | Foglio troppo piccolo per segnatura ${cols}x${rows}`;
             monitor.className = "monitor-error";
         }
     }
@@ -121,9 +116,8 @@
         const file = e.target.files[0];
         if (file) {
             document.getElementById('fileStatus').innerText = file.name;
-            const buffer = await file.arrayBuffer();
-            loadedPdf = await PDFLib.PDFDocument.load(buffer);
-            writeLog(`PDF caricato: ${loadedPdf.getPageCount()} pagine.`);
+            loadedPdf = await PDFLib.PDFDocument.load(await file.arrayBuffer());
+            writeLog(`PDF pronto: ${loadedPdf.getPageCount()} pag.`);
             runAutoCalculate();
             checkFit();
         }
@@ -137,36 +131,25 @@
         
         let plan = [];
         let temp = total;
+        let base = (mode === '16esimo') ? 16 : 8;
 
-        if (mode === 'accavallato') {
-            while (temp > 0) { plan.push(4); temp -= 4; }
-        } else if (mode === '8avo_foglio') {
-            while (temp > 0) {
-                if (temp >= 8) { plan.push(8); temp -= 8; }
-                else { plan.push(4); temp -= 4; }
-            }
-        } else { // 16esimo
-            while (temp > 0) {
-                if (temp >= 16) { plan.push(16); temp -= 16; }
-                else if (temp >= 8) { plan.push(8); temp -= 8; }
-                else { plan.push(4); temp -= 4; }
-            }
+        while (temp > 0) {
+            if (temp >= base) { plan.push(base); temp -= base; }
+            else if (temp >= 8) { plan.push(8); temp -= 8; }
+            else { plan.push(4); temp -= 4; }
         }
         document.getElementById('sigInput').value = plan.join(', ');
-        writeLog(`Piano ricalcolato: ${plan.join(', ')}`);
+        writeLog(`Piano: ${plan.join(', ')}`);
     }
 
     document.getElementById('runBtn').onclick = async () => {
-        if (!loadedPdf) return alert("Manca il file!");
-        const mode = document.getElementById('modeSelect').value;
+        if (!loadedPdf) return alert("Carica un file!");
         const { PDFDocument, degrees } = PDFLib;
         const outDoc = await PDFDocument.create();
         
-        let sW_mm, sH_mm;
-        if (document.getElementById('sheetSelect').value === 'custom') {
-            sW_mm = parseFloat(document.getElementById('customW').value);
-            sH_mm = parseFloat(document.getElementById('customH').value);
-        } else { [sW_mm, sH_mm] = document.getElementById('sheetSelect').value.split(',').map(Number); }
+        let [sW_mm, sH_mm] = (document.getElementById('sheetSelect').value === 'custom')
+            ? [parseFloat(document.getElementById('customW').value), parseFloat(document.getElementById('customH').value)]
+            : document.getElementById('sheetSelect').value.split(',').map(Number);
         
         const sheetW = pt(sW_mm), sheetH = pt(sH_mm);
         const embeddedPages = await outDoc.embedPages(loadedPdf.getPages());
@@ -174,58 +157,43 @@
         
         let totalProcessed = 0;
 
-        for (let sigSize of sigPlan) {
+        for (let subSize of sigPlan) {
             let currentOffset = totalProcessed;
-            let subSize = sigSize;
             let cols, rows, schemaB, schemaV;
 
-            if (subSize === 4) {
-                // Quartini (2-up)
-                for (let i = 0; i < 2; i++) {
-                    const sheet = outDoc.addPage([sheetW, sheetH]);
-                    let lIdx = (i === 0) ? (currentOffset + 3) : (currentOffset + 1);
-                    let rIdx = (i === 0) ? (currentOffset + 0) : (currentOffset + 2);
-                    const draw = (idx, side) => {
-                        if (idx >= embeddedPages.length) return;
-                        const p = embeddedPages[idx];
-                        const x = (side === 'left') ? (sheetW / 2) - p.width : (sheetW / 2);
-                        sheet.drawPage(p, { x, y: (sheetH - p.height) / 2 });
-                    };
-                    draw(lIdx, 'left'); draw(rIdx, 'right');
-                }
-            } else {
-                if (subSize === 16) {
-                    cols = 4; rows = 2;
-                    schemaB = [{i:4,r:180,c:0,row:1},{i:11,r:180,c:1,row:1},{i:8,r:180,c:2,row:1},{i:7,r:180,c:3,row:1},{i:3,r:0,c:0,row:0},{i:12,r:0,c:1,row:0},{i:15,r:0,c:2,row:0},{i:0,r:0,c:3,row:0}];
-                    schemaV = [{i:6,r:180,c:0,row:1},{i:9,r:180,c:1,row:1},{i:10,r:180,c:2,row:1},{i:5,r:180,c:3,row:1},{i:1,r:0,c:0,row:0},{i:14,r:0,c:1,row:0},{i:13,r:0,c:2,row:0},{i:2,r:0,c:3,row:0}];
-                } else if (subSize === 8) {
-                    cols = 2; rows = 2;
-                    schemaB = [{i:4,r:180,c:0,row:1},{i:3,r:180,c:1,row:1},{i:5,r:0,c:0,row:0},{i:2,r:0,c:1,row:0}];
-                    schemaV = [{i:1,r:180,c:0,row:1},{i:6,r:180,c:1,row:1},{i:0,r:0,c:0,row:0},{i:7,r:0,c:1,row:0}];
-                }
-
-                writeLog(`Imposing ${subSize} pag...`);
-                const bianca = outDoc.addPage([sheetW, sheetH]);
-                const volta = outDoc.addPage([sheetW, sheetH]);
-                const drawGrid = (page, schema) => {
-                    schema.forEach(s => {
-                        let realIdx = currentOffset + s.i;
-                        if (realIdx >= embeddedPages.length) return;
-                        const p = embeddedPages[realIdx];
-                        const gridW = p.width * cols;
-                        const gridH = p.height * rows;
-                        const x = ((sheetW - gridW) / 2) + (s.c * p.width);
-                        const y = ((sheetH - gridH) / 2) + (s.row * p.height);
-                        page.drawPage(p, { x: s.r === 180 ? x + p.width : x, y: s.r === 180 ? y + p.height : y, rotate: degrees(s.r) });
-                    });
-                };
-                drawGrid(bianca, schemaB); drawGrid(volta, schemaV);
+            if (subSize === 16) {
+                cols = 4; rows = 2;
+                schemaB = [{i:4,r:180,c:0,row:1},{i:11,r:180,c:1,row:1},{i:8,r:180,c:2,row:1},{i:7,r:180,c:3,row:1},{i:3,r:0,c:0,row:0},{i:12,r:0,c:1,row:0},{i:15,r:0,c:2,row:0},{i:0,r:0,c:3,row:0}];
+                schemaV = [{i:6,r:180,c:0,row:1},{i:9,r:180,c:1,row:1},{i:10,r:180,c:2,row:1},{i:5,r:180,c:3,row:1},{i:1,r:0,c:0,row:0},{i:14,r:0,c:1,row:0},{i:13,r:0,c:2,row:0},{i:2,r:0,c:3,row:0}];
+            } else if (subSize === 8) {
+                cols = 2; rows = 2;
+                schemaB = [{i:4,r:180,c:0,row:1},{i:3,r:180,c:1,row:1},{i:5,r:0,c:0,row:0},{i:2,r:0,c:1,row:0}];
+                schemaV = [{i:1,r:180,c:0,row:1},{i:6,r:180,c:1,row:1},{i:0,r:0,c:0,row:0},{i:7,r:0,c:1,row:0}];
+            } else { // 4 pagine (Quartino editoriale per piega)
+                cols = 2; rows = 1;
+                schemaB = [{i:3,r:0,c:0,row:0},{i:0,r:0,c:1,row:0}]; // Pag 4 e 1
+                schemaV = [{i:1,r:0,c:0,row:0},{i:2,r:0,c:1,row:0}]; // Pag 2 e 3
             }
-            totalProcessed += sigSize;
+
+            const bianca = outDoc.addPage([sheetW, sheetH]);
+            const volta = outDoc.addPage([sheetW, sheetH]);
+            const drawGrid = (page, schema, c, r) => {
+                schema.forEach(s => {
+                    let realIdx = currentOffset + s.i;
+                    if (realIdx >= embeddedPages.length) return;
+                    const p = embeddedPages[realIdx];
+                    const x = ((sheetW - (p.width * c)) / 2) + (s.c * p.width);
+                    const y = ((sheetH - (p.height * r)) / 2) + (s.row * p.height);
+                    page.drawPage(p, { x: s.r === 180 ? x + p.width : x, y: s.r === 180 ? y + p.height : y, rotate: degrees(s.r) });
+                });
+            };
+            drawGrid(bianca, schemaB, cols, rows);
+            drawGrid(volta, schemaV, cols, rows);
+            totalProcessed += subSize;
         }
         const pdfBytes = await outDoc.save();
         window.open(URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' })));
-        writeLog("✅ PDF GENERATO!");
+        writeLog("✅ PDF Editoriale Generato!");
     };
 </script>
 </body>
