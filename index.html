@@ -2,205 +2,206 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>🧊 Lil Imposer - Platinum Edition 🧊</title>
+    <title>⛓️ Lil Imposer - Gothic Chrome ⛓️</title>
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
     <style>
         body { 
-            font-family: 'Impact', 'Arial Black', sans-serif; 
-            background: radial-gradient(circle, #2c2c2c 0%, #000 100%), url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
-            color: #ccc; 
+            font-family: 'Impact', sans-serif; 
+            background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
+            color: #efefef; 
             display: flex; 
             justify-content: center; 
             padding: 20px; 
             margin: 0;
-            overflow-x: hidden;
         }
 
-        /* Chrome/Steel Panel */
-        .panel { 
-            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
-            padding: 30px; 
-            border-radius: 0px; 
-            width: 100%; 
-            max-width: 700px; 
-            border: 4px solid #888;
-            box-shadow: 0 0 40px rgba(255, 255, 255, 0.1), inset 0 0 20px #444;
-            position: relative;
-        }
-
-        /* Lil Imposer Platinum Title */
-        h1 { 
-            background: linear-gradient(to bottom, #fff 0%, #888 45%, #fff 50%, #444 55%, #aaa 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-align: center; 
-            margin-bottom: 30px; 
-            font-size: 4rem; 
-            text-transform: uppercase;
-            filter: drop-shadow(4px 4px 0px #000) drop-shadow(0 0 10px rgba(255,255,255,0.5));
-            letter-spacing: -3px;
-            font-style: italic;
-        }
-
-        .section { 
-            background: rgba(255, 255, 255, 0.03);
-            padding: 20px; 
-            border: 1px solid #333;
-            margin-bottom: 20px; 
-            position: relative;
-            box-shadow: 5px 5px 0px #555;
-        }
-
-        .section-title { 
-            font-size: 0.9rem; 
-            color: #fff; 
-            margin-bottom: 15px; 
-            display: block; 
-            text-transform: uppercase;
-            text-shadow: 0 0 8px rgba(255,255,255,0.6);
+        /* Gothic Title Style */
+        .gothic-text {
+            font-family: 'UnifrakturCook', cursive;
             letter-spacing: 2px;
         }
 
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .panel { 
+            background: linear-gradient(180deg, #111 0%, #000 100%);
+            padding: 40px; 
+            border-radius: 0px; 
+            width: 100%; 
+            max-width: 750px; 
+            border: 2px solid #333;
+            box-shadow: 0 0 60px rgba(0,0,0,1), inset 0 0 30px rgba(255,255,255,0.05);
+            position: relative;
+            outline: 1px solid #444;
+            outline-offset: -10px;
+        }
 
-        label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 5px; text-transform: uppercase; }
+        h1 { 
+            font-family: 'UnifrakturCook', cursive;
+            background: linear-gradient(to bottom, #fff 0%, #888 45%, #fff 50%, #555 55%, #aaa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center; 
+            margin-bottom: 40px; 
+            font-size: 5.5rem; 
+            filter: drop-shadow(5px 5px 0px #000);
+            margin-top: 10px;
+        }
+
+        .section { 
+            background: rgba(255, 255, 255, 0.02);
+            padding: 25px; 
+            border: 1px solid #222;
+            margin-bottom: 25px; 
+            position: relative;
+        }
+
+        .section-title { 
+            font-family: 'UnifrakturCook', cursive;
+            font-size: 1.8rem; 
+            color: #fff; 
+            margin-bottom: 15px; 
+            display: block; 
+            text-shadow: 0 0 15px rgba(255,255,255,0.4);
+            border-bottom: 1px solid #333;
+        }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+
+        label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: #666; 
+            margin-bottom: 8px; 
+            text-transform: uppercase; 
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
 
         input, select { 
             width: 100%; 
-            padding: 12px; 
-            border: 2px solid #666; 
+            padding: 15px; 
+            border: 1px solid #444; 
             background: #000; 
             color: #fff; 
-            font-weight: bold;
+            font-family: 'Impact', sans-serif;
+            font-size: 1.1rem;
+            text-transform: uppercase;
             box-sizing: border-box;
-            border-radius: 0;
-            outline: none;
             transition: 0.3s;
         }
-        input:focus, select:focus { border-color: #fff; box-shadow: 0 0 10px #fff; }
+        input:focus { border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
 
         #monitor { 
             margin-top: 15px; 
-            font-family: 'Courier New', monospace; 
-            font-size: 0.85rem; 
+            font-family: 'Impact', sans-serif; 
+            font-size: 1rem; 
             background: #000; 
-            color: #aaa; 
+            color: #555; 
             padding: 15px; 
-            border: 1px solid #444;
+            border-left: 5px solid #333;
+            letter-spacing: 1px;
         }
 
-        .monitor-ok { color: #fff !important; border-color: #fff !important; text-shadow: 0 0 10px #fff; }
-        .monitor-error { color: #ff0000 !important; border-color: #ff0000 !important; }
+        .monitor-ok { color: #fff !important; border-left-color: #fff !important; }
+        .monitor-error { color: #ff0000 !important; border-left-color: #ff0000 !important; }
 
-        /* Ice Upload Zone */
         .upload-zone { 
-            border: 3px solid #666; 
-            padding: 40px; 
+            border: 2px solid #333; 
+            padding: 50px; 
             text-align: center; 
-            margin: 20px 0; 
-            background: linear-gradient(45deg, #000, #111);
+            margin: 30px 0; 
+            background: #050505;
             cursor: pointer; 
-            transition: all 0.3s;
-            font-size: 1.2rem;
-            color: #fff;
-            text-transform: uppercase;
+            transition: 0.4s;
             position: relative;
-            z-index: 10;
+            overflow: hidden;
         }
-        .upload-zone:hover { 
-            border-color: #fff;
-            background: #1a1a1a;
-            box-shadow: 0 0 20px rgba(255,255,255,0.2);
-        }
+        .upload-zone:hover { border-color: #fff; background: #0a0a0a; }
+        .upload-zone span { font-size: 1.5rem; letter-spacing: 3px; }
 
-        /* Platinum Button */
         button#runBtn { 
-            background: linear-gradient(to bottom, #fff, #999, #444);
+            background: #fff;
             color: #000; 
-            border: 2px solid #fff; 
-            padding: 25px; 
+            border: none; 
+            padding: 30px; 
             width: 100%; 
+            font-family: 'UnifrakturCook', cursive;
             font-weight: 900; 
             cursor: pointer; 
-            font-size: 1.6rem; 
-            text-transform: uppercase; 
+            font-size: 2.5rem; 
             margin-top: 10px;
-            box-shadow: 0 8px 0px #333;
-            transition: 0.1s;
+            transition: 0.2s;
+            box-shadow: 0 0 30px rgba(255,255,255,0.1);
         }
-        button#runBtn:active { transform: translateY(4px); box-shadow: 0 4px 0px #333; }
+        button#runBtn:hover { background: #ccc; letter-spacing: 5px; }
 
         #log { 
-            margin-top: 20px; 
+            margin-top: 25px; 
             font-family: 'Courier New', monospace; 
-            font-size: 0.75rem; 
+            font-size: 0.7rem; 
             background: #000; 
-            color: #888; 
+            color: #444; 
             padding: 15px; 
-            height: 90px; 
+            height: 80px; 
             overflow-y: auto; 
-            border: 1px solid #222;
+            border: 1px solid #111;
+            text-transform: uppercase;
         }
 
         .hidden { display: none !important; }
 
-        /* Bling Decorations */
-        .decor { position: absolute; pointer-events: none; z-index: 5; filter: drop-shadow(0 0 5px #fff); }
-        .bling1 { top: -15px; right: -15px; font-size: 3rem; }
-        .bling2 { bottom: -15px; left: -15px; font-size: 3rem; }
-        .bling3 { top: 50%; left: -25px; font-size: 2rem; opacity: 0.5; }
-
+        /* Chrome Sparkles */
+        .sparkle { position: absolute; pointer-events: none; color: #fff; opacity: 0.6; }
     </style>
 </head>
 <body>
 
 <div class="panel">
-    <span class="decor bling1">✨</span>
-    <span class="decor bling2">⛓️</span>
-    <span class="decor bling3">💎</span>
+    <span class="sparkle" style="top:20px; left:20px;">✦</span>
+    <span class="sparkle" style="bottom:20px; right:20px;">✦</span>
     
-    <h1>LIL IMPOSER</h1>
+    <h1>Lil Imposer</h1>
     
     <div class="section">
-        <span class="section-title">💿 WHIP SETTINGS (PAPER) 💿</span>
+        <span class="section-title">The Whip (Paper)</span>
         <div class="grid">
             <div>
-                <label>CHOOSE YO SHEET</label>
+                <label>Dimensions</label>
                 <select id="sheetSelect" onchange="toggleCustomSheet(); checkFit();">
-                    <option value="420,297">A3 (Standard Flex)</option>
-                    <option value="450,320">SRA3 (Big Boy)</option>
-                    <option value="594,420">A2 (Giant Steez)</option>
-                    <option value="210,148">A5 (Pocket Heat)</option>
-                    <option value="500,700">50x70 (OG Size)</option>
-                    <option value="700,1000">70x100 (Final Boss)</option>
-                    <option value="custom">-- CUSTOM DRIP --</option>
+                    <option value="420,297">A3 / Silver Edition</option>
+                    <option value="450,320">SRA3 / Platinum Boy</option>
+                    <option value="594,420">A2 / Big Stepper</option>
+                    <option value="500,700">50x70 / OG Block</option>
+                    <option value="700,1000">70x100 / World Domination</option>
+                    <option value="custom">-- Custom Drip --</option>
                 </select>
             </div>
             <div id="customSheetDims" class="grid hidden">
-                <div><label>WIDTH mm</label><input type="number" id="customW" oninput="checkFit()"></div>
-                <div><label>HEIGHT mm</label><input type="number" id="customH" oninput="checkFit()"></div>
+                <div><label>W mm</label><input type="number" id="customW" oninput="checkFit()"></div>
+                <div><label>H mm</label><input type="number" id="customH" oninput="checkFit()"></div>
             </div>
         </div>
-        <div id="monitor">> WAITIN' FOR DAT PDF...</div>
+        <div id="monitor">> AWAITING THE MANUSCRIPT...</div>
     </div>
 
     <div class="section">
-        <span class="section-title">📊 SIGNATURE FLOW 📊</span>
-        <label>DA SEQUENCE</label>
-        <input type="text" id="sigInput" placeholder="LETTIN' THE SYSTEM COOK...">
+        <span class="section-title">The Flow (Signatures)</span>
+        <label>Calculated Sequence</label>
+        <input type="text" id="sigInput" placeholder="...">
     </div>
 
-    <div class="upload-zone" id="dropZone" onclick="document.getElementById('pdfFile').click()">
+    <div class="upload-zone" onclick="document.getElementById('pdfFile').click()">
         <input type="file" id="pdfFile" accept="application/pdf" style="display:none">
-        <span id="fileStatus">❄️ DROP YO FILE OR TAP ❄️</span>
+        <span class="gothic-text">Drop the heat here</span>
     </div>
 
-    <button id="runBtn">✨ MAKE IT BLING ✨</button>
+    <button id="runBtn">Bless this File</button>
     
-    <div id="log">SYSTEM READY TO STACK.</div>
+    <div id="log">SYSTEM ARMED. READY TO PRINT.</div>
 </div>
 
 <script>
+    /* JavaScript rimane invariato per mantenere la funzionalità perfetta */
     const pt = (mm) => (mm * 72) / 25.4;
     const ptToMm = (p) => (p * 25.4) / 72;
     let loadedPdf = null;
@@ -225,10 +226,10 @@
         const pH_mm = ptToMm(firstPage.getHeight());
         const totalW = (pW_mm * 2);
         if (sW >= totalW && sH >= pH_mm) {
-            monitor.innerText = `> STATUS: WE GOOD. ${pW_mm.toFixed(0)}x${pH_mm.toFixed(0)}mm FITS ON DA SHEET.`;
+            monitor.innerText = `> STATUS: FIT FOR A KING. ${pW_mm.toFixed(0)}x${pH_mm.toFixed(0)}mm ENTERS.`;
             monitor.className = "monitor-ok";
         } else {
-            monitor.innerText = `> ERR: SHEET TOO SMALL, DAWG!`;
+            monitor.innerText = `> ERR: SHEET IS TOO WEAK.`;
             monitor.className = "monitor-error";
         }
     }
@@ -242,10 +243,9 @@
     document.getElementById('pdfFile').onchange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            document.getElementById('fileStatus').innerText = "💿 " + file.name.toUpperCase();
             const arrayBuffer = await file.arrayBuffer();
             loadedPdf = await PDFLib.PDFDocument.load(arrayBuffer);
-            writeLog(`LOADED ${loadedPdf.getPageCount()} TRACKS (PAGES).`);
+            writeLog(`LOADED ${loadedPdf.getPageCount()} PAGES OF TRUTH.`);
             autoCalculateSignatures();
             checkFit();
         }
@@ -269,9 +269,9 @@
     }
 
     document.getElementById('runBtn').onclick = async () => {
-        if (!loadedPdf) return alert("LOAD THE TRACK FIRST, HOMIE!");
+        if (!loadedPdf) return alert("UPLOAD THE TRUTH FIRST.");
         try {
-            writeLog("COOKIN' PLATINUM PDF...");
+            writeLog("TRANSMUTING PDF...");
             const { PDFDocument } = PDFLib;
             const outDoc = await PDFDocument.create();
             let sW_mm, sH_mm;
@@ -302,7 +302,7 @@
             const pdfBytes = await outDoc.save();
             const blob = new Blob([pdfBytes], { type: 'application/pdf' });
             window.open(URL.createObjectURL(blob));
-            writeLog("🧊 ICE ON YO WRIST! PDF IS READY.");
+            writeLog("GLORY! IT IS DONE.");
         } catch (e) { writeLog(`❌ FUMBLED: ${e.message}`); }
     };
 </script>
