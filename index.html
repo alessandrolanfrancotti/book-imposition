@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Book Imposer Pro V23 - Adaptive Industrial</title>
+    <title>Book Imposer Pro V24 - 16/8 Standard</title>
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; display: flex; justify-content: center; padding: 20px; margin: 0; }
@@ -25,7 +25,7 @@
 <body>
 
 <div class="panel">
-    <h1>📖 Book Imposer Pro V23</h1>
+    <h1>📖 Book Imposer Pro V24 (Standard 16/8)</h1>
     
     <div class="section">
         <span class="section-title">1. Configurazione Stampa</span>
@@ -43,9 +43,9 @@
             <div>
                 <label>Modalità Imposizione</label>
                 <select id="modeSelect" onchange="runAutoCalculate(); checkFit();">
-                    <option value="16esimo_foglio">16esimo su foglio (4x2)</option>
-                    <option value="12esimo_foglio">12esimo su foglio (2x3 Verticale)</option>
-                    <option value="8avo_foglio">8avo su foglio (2x2)</option>
+                    <option value="16esimo_foglio">Solo 16esimi (4x2)</option>
+                    <option value="8avo_foglio">Solo 8avi (2x2)</option>
+                    <option value="ibrido">Ibrido (Ottimizzato 16+8)</option>
                     <option value="accavallato">Quartini accavallati (2-up)</option>
                 </select>
             </div>
@@ -54,18 +54,18 @@
             <div><label>L mm</label><input type="number" id="customW" oninput="checkFit()"></div>
             <div><label>A mm</label><input type="number" id="customH" oninput="checkFit()"></div>
         </div>
-        <div id="monitor">> Carica un PDF per iniziare...</div>
+        <div id="monitor">> In attesa di PDF...</div>
     </div>
 
     <div class="section">
-        <span class="section-title">2. Piano Segnature (Auto-Adattivo)</span>
-        <label>Sequenza (Modificabile manualmente)</label>
+        <span class="section-title">2. Piano Segnature</span>
+        <label>Sequenza Calcolata</label>
         <input type="text" id="sigInput" value="">
     </div>
 
     <div class="upload-zone" onclick="document.getElementById('pdfFile').click()">
         <input type="file" id="pdfFile" accept="application/pdf" style="display:none">
-        <span id="fileStatus">Trascina o clicca per caricare il PDF del libro</span>
+        <span id="fileStatus">Carica il PDF del libro</span>
     </div>
 
     <button id="runBtn">Genera Imposizione Professional</button>
@@ -97,18 +97,17 @@
         const pH = ptToMm(firstPage.getHeight());
         
         let cols = 2, rows = 1;
-        if (mode === '16esimo_foglio') { cols = 4; rows = 2; }
-        else if (mode === '12esimo_foglio') { cols = 2; rows = 3; }
+        if (mode === '16esimo_foglio' || mode === 'ibrido') { cols = 4; rows = 2; }
         else if (mode === '8avo_foglio') { cols = 2; rows = 2; }
 
         let reqW = pW * cols;
         let reqH = pH * rows;
 
         if (sW >= reqW && sH >= reqH) {
-            monitor.innerHTML = `> STATO: OK | Ingombro Segnatura: ${reqW.toFixed(1)}x${reqH.toFixed(1)} mm`;
+            monitor.innerHTML = `> OK | Ingombro Segnatura: ${reqW.toFixed(1)}x${reqH.toFixed(1)} mm`;
             monitor.className = "monitor-ok";
         } else {
-            monitor.innerHTML = `> ERRORE: FOGLIO PICCOLO | Richiesto min: ${reqW.toFixed(1)}x${reqH.toFixed(1)} mm`;
+            monitor.innerHTML = `> ERRORE | Richiesto: ${reqW.toFixed(1)}x${reqH.toFixed(1)} mm`;
             monitor.className = "monitor-error";
         }
     }
@@ -125,7 +124,7 @@
             document.getElementById('fileStatus').innerText = file.name;
             const buffer = await file.arrayBuffer();
             loadedPdf = await PDFLib.PDFDocument.load(buffer);
-            writeLog(`PDF caricato: ${loadedPdf.getPageCount()} pagine.`);
+            writeLog(`PDF: ${loadedPdf.getPageCount()} pag.`);
             runAutoCalculate();
             checkFit();
         }
@@ -135,38 +134,23 @@
         if (!loadedPdf) return;
         let total = loadedPdf.getPageCount();
         const mode = document.getElementById('modeSelect').value;
-        
-        if (total % 4 !== 0) {
-            total = Math.ceil(total / 4) * 4;
-            writeLog(`Pagine non multiple di 4. Arrotondato a ${total}.`);
-        }
+        if (total % 4 !== 0) total = Math.ceil(total / 4) * 4;
         
         let plan = [];
         let temp = total;
 
-        if (mode === '12esimo_foglio') {
-            while (temp > 0) {
-                if (temp >= 12) { plan.push(12); temp -= 12; }
-                else if (temp >= 8) { plan.push(8); temp -= 8; }
-                else { plan.push(temp); temp = 0; }
-            }
-        } else if (mode === '8avo_foglio') {
-            while (temp > 0) {
-                if (temp >= 8) { plan.push(8); temp -= 8; }
-                else { plan.push(temp); temp = 0; }
-            }
+        if (mode === '8avo_foglio') {
+            while (temp > 0) { plan.push(8); temp -= 8; }
         } else {
+            // Logica 16esimi + resti da 8 o 4 (No 12esimi)
             while (temp > 0) {
-                if (temp >= 32) { plan.push(16); temp -= 16; }
-                else if (temp === 28) { plan.push(12, 16); temp = 0; }
-                else if (temp === 24) { plan.push(8, 16); temp = 0; }
-                else if (temp === 20) { plan.push(20); temp = 0; }
-                else if (temp === 16) { plan.push(16); temp = 0; }
-                else { plan.push(temp); temp = 0; }
+                if (temp >= 16) { plan.push(16); temp -= 16; }
+                else if (temp >= 8) { plan.push(8); temp -= 8; }
+                else { plan.push(4); temp -= 4; }
             }
         }
         document.getElementById('sigInput').value = plan.join(', ');
-        writeLog(`Piano ricalcolato (${mode}): ${plan.join(', ')}`);
+        writeLog(`Piano: ${plan.join(', ')}`);
     }
 
     document.getElementById('runBtn').onclick = async () => {
@@ -193,7 +177,7 @@
 
             for (let subSize of subSigs) {
                 let cols, rows, schemaB, schemaV;
-                let activeMode = (subSize === 4) ? 'accavallato' : mode;
+                let activeMode = (subSize === 4) ? 'accavallato' : (subSize === 8) ? '8avo_foglio' : '16esimo_foglio';
 
                 if (activeMode === 'accavallato') {
                     for (let i = 0; i < subSize / 2; i++) {
@@ -213,17 +197,12 @@
                         cols = 4; rows = 2;
                         schemaB = [{i:4,r:180,c:0,row:1},{i:11,r:180,c:1,row:1},{i:8,r:180,c:2,row:1},{i:7,r:180,c:3,row:1},{i:3,r:0,c:0,row:0},{i:12,r:0,c:1,row:0},{i:15,r:0,c:2,row:0},{i:0,r:0,c:3,row:0}];
                         schemaV = [{i:6,r:180,c:0,row:1},{i:9,r:180,c:1,row:1},{i:10,r:180,c:2,row:1},{i:5,r:180,c:3,row:1},{i:1,r:0,c:0,row:0},{i:14,r:0,c:1,row:0},{i:13,r:0,c:2,row:0},{i:2,r:0,c:3,row:0}];
-                    } else if (subSize === 12) {
-                        cols = 2; rows = 3;
-                        schemaB = [{i:11,r:0,c:0,row:0},{i:0,r:0,c:1,row:0},{i:3,r:180,c:0,row:1},{i:8,r:180,c:1,row:1},{i:4,r:180,c:0,row:2},{i:7,r:180,c:1,row:2}];
-                        schemaV = [{i:1,r:0,c:0,row:0},{i:10,r:0,c:1,row:0},{i:9,r:180,c:0,row:1},{i:2,r:180,c:1,row:1},{i:6,r:180,c:0,row:2},{i:5,r:180,c:1,row:2}];
-                    } else if (subSize === 8) {
+                    } else { // 8avo
                         cols = 2; rows = 2;
                         schemaB = [{i:4,r:180,c:0,row:1},{i:3,r:180,c:1,row:1},{i:5,r:0,c:0,row:0},{i:2,r:0,c:1,row:0}];
                         schemaV = [{i:1,r:180,c:0,row:1},{i:6,r:180,c:1,row:1},{i:0,r:0,c:0,row:0},{i:7,r:0,c:1,row:0}];
                     }
 
-                    writeLog(`Imposing ${subSize} pag (${cols}x${rows})...`);
                     const bianca = outDoc.addPage([sheetW, sheetH]);
                     const volta = outDoc.addPage([sheetW, sheetH]);
                     const drawGrid = (page, schema) => {
