@@ -49,7 +49,6 @@
       margin: 0 0 15px 0;
       overflow: hidden;
     }
-
     .logo {
       width: 100%;
       height: 100%;
@@ -118,7 +117,7 @@
     .monitor-ok { color: #00ff00 !important; }
     .monitor-error { color: #ff4757 !important; }
 
-    /* ---------- UPLOAD (cover image like download) ---------- */
+    /* ---------- UPLOAD (cover image) ---------- */
     .upload-zone {
       background: transparent;
       border: none;
@@ -128,13 +127,11 @@
       cursor: pointer;
       user-select: none;
     }
-
     .upload-wrap {
       height: clamp(90px, 14vh, 180px);
       width: 100%;
       overflow: hidden;
     }
-
     .upload-wrap img {
       width: 100%;
       height: 100%;
@@ -151,13 +148,11 @@
       width: 100%;
       cursor: pointer;
     }
-
     .btn-wrap {
       height: clamp(90px, 14vh, 180px);
       width: 100%;
       overflow: hidden;
     }
-
     .btn-wrap img {
       width: 100%;
       height: 100%;
@@ -166,14 +161,26 @@
       object-position: center;
     }
 
-    /* ---------- MISC ---------- */
-    .grid-custom {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      margin-top: 10px;
+    /* ---------- NEW: SIZES ROW (Select 50% + W 25% + H 25%) ---------- */
+    .sizes-row {
+      display: flex;
+      gap: 12px;              /* gutter */
+      align-items: flex-end;  /* allinea i box in basso */
+      flex-wrap: nowrap;
+    }
+    .sizes-row .col-50 { flex: 2 1 0; } /* ~50% */
+    .sizes-row .col-25 { flex: 1 1 0; } /* ~25% */
+    .sizes-row .col-50,
+    .sizes-row .col-25 { min-width: 0; } /* evita overflow */
+
+    /* Se lo schermo è davvero stretto, meglio andare a capo */
+    @media (max-width: 520px) {
+      .sizes-row { flex-wrap: wrap; }
+      .sizes-row .col-50,
+      .sizes-row .col-25 { flex: 1 1 100%; }
     }
 
+    /* ---------- MISC ---------- */
     .hidden { display: none !important; }
   </style>
 </head>
@@ -188,23 +195,28 @@
 
     <div class="section">
       <span class="section-title">Paper</span>
-      <label>SIZES</label>
-      <select id="sheetSelect">
-        <option value="210,297">A4</option>
-        <option value="420,297">A3</option>
-        <option value="450,320">SRA3</option>
-        <option value="594,420">A2</option>
-        <option value="500,700">50x70</option>
-        <option value="700,1000">70x100</option>
-        <option value="custom">CUSTOM</option>
-      </select>
 
-      <div id="customSheetDims" class="grid-custom hidden">
-        <div>
+      <!-- TUTTO SU UNA RIGA: SIZES (50%) + W (25%) + H (25%) -->
+      <div class="sizes-row">
+        <div class="col-50">
+          <label>SIZES</label>
+          <select id="sheetSelect">
+            <option value="210,297">A4</option>
+            <option value="420,297">A3</option>
+            <option value="450,320">SRA3</option>
+            <option value="594,420">A2</option>
+            <option value="500,700">50x70</option>
+            <option value="700,1000">70x100</option>
+            <option value="custom">CUSTOM</option>
+          </select>
+        </div>
+
+        <div class="col-25" id="customWCol">
           <label>W mm</label>
           <input type="number" id="customW" />
         </div>
-        <div>
+
+        <div class="col-25" id="customHCol">
           <label>H mm</label>
           <input type="number" id="customH" />
         </div>
@@ -220,7 +232,7 @@
       <input type="text" id="sigInput" placeholder="SEQUENCE" />
     </div>
 
-    <!-- UPLOAD (image instead of text) -->
+    <!-- UPLOAD (image) -->
     <div class="upload-zone" id="uploadZone">
       <input type="file" id="pdfFile" accept="application/pdf" class="hidden">
       <div class="upload-wrap">
@@ -228,7 +240,7 @@
       </div>
     </div>
 
-    <!-- DOWNLOAD -->
+    <!-- DOWNLOAD (image) -->
     <button id="runBtn" class="btn-img">
       <div class="btn-wrap">
         <img src="DOWNLOAD.png" alt="Download">
@@ -244,9 +256,10 @@
     let loadedPdf = null;
 
     const sheetSelect = document.getElementById('sheetSelect');
-    const customSheetDims = document.getElementById('customSheetDims');
     const customW = document.getElementById('customW');
     const customH = document.getElementById('customH');
+    const customWCol = document.getElementById('customWCol');
+    const customHCol = document.getElementById('customHCol');
 
     const pdfFile = document.getElementById('pdfFile');
     const uploadZone = document.getElementById('uploadZone');
@@ -254,9 +267,10 @@
     const runBtn = document.getElementById('runBtn');
     const monitor = document.getElementById('monitor');
 
-    function toggleCustomSheet() {
-      const val = sheetSelect.value;
-      customSheetDims.classList.toggle('hidden', val !== 'custom');
+    function setCustomVisibility() {
+      const isCustom = sheetSelect.value === 'custom';
+      customWCol.classList.toggle('hidden', !isCustom);
+      customHCol.classList.toggle('hidden', !isCustom);
       checkFit();
     }
 
@@ -269,8 +283,7 @@
       return sheetSelect.value.split(',').map(Number);
     }
 
-    // ✅ MONITOR: controlla se il foglio contiene l’imposizione 2-up (left+right)
-    // (cioè: due pagine affiancate, altezza singola pagina)
+    // Monitor: controlla se il foglio contiene l’imposizione 2-up (left+right)
     function checkFit() {
       if (!loadedPdf) {
         monitor.textContent = "> Carica un PDF per iniziare...";
@@ -279,12 +292,10 @@
       }
 
       const [sW, sH] = getSheetMm();
-
       const firstPage = loadedPdf.getPages()[0];
       const pW = ptToMm(firstPage.getWidth());
       const pH = ptToMm(firstPage.getHeight());
 
-      // imposizione attuale: 2 pagine affiancate, non ruotate
       const reqW = pW * 2;
       const reqH = pH;
 
@@ -319,7 +330,7 @@
       sigInput.value = plan.join(', ');
     }
 
-    sheetSelect.addEventListener('change', toggleCustomSheet);
+    sheetSelect.addEventListener('change', setCustomVisibility);
     customW.addEventListener('input', checkFit);
     customH.addEventListener('input', checkFit);
 
@@ -392,7 +403,7 @@
     });
 
     // init
-    toggleCustomSheet();
+    setCustomVisibility();
     checkFit();
   </script>
 </body>
