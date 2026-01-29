@@ -42,22 +42,23 @@
       box-shadow: 0 0 15px #fff, 0 0 30px rgba(255,255,255,0.5), inset 0 0 10px #fff;
     }
 
-    /* --- LOGO AREA (cover crop laterale) --- */
+    /* ---------- LOGO (cover) ---------- */
     .logo-wrap {
       height: clamp(90px, 18vh, 200px);
       width: 100%;
       margin: 0 0 15px 0;
-      overflow: hidden; /* maschera per croppare i lati */
+      overflow: hidden;
     }
 
     .logo {
       width: 100%;
       height: 100%;
       display: block;
-      object-fit: cover;       /* RIEMPI e CROPA */
-      object-position: center; /* crop centrato */
+      object-fit: cover;
+      object-position: center;
     }
 
+    /* ---------- SECTIONS ---------- */
     .section {
       background: rgba(255, 255, 255, 0.02);
       padding: clamp(10px, 2vh, 20px);
@@ -101,6 +102,7 @@
       outline: none;
     }
 
+    /* ---------- UPLOAD ---------- */
     .upload-zone {
       border: 3px solid;
       border-image: var(--chrome-border) 1;
@@ -120,30 +122,30 @@
       -webkit-text-fill-color: transparent;
     }
 
-    /* --- BUTTON IMAGE (al posto della scritta Download) --- */
-    button#runBtn.btn-img {
-      background: var(--chrome-gradient);
-      color: #000;
-      border: 2px solid #fff;
+    /* ---------- DOWNLOAD BUTTON (cover) ---------- */
+    .btn-img {
+      background: transparent;
+      border: none;
+      padding: 0;
       width: 100%;
       cursor: pointer;
-
-      /* IMPORTANTE: togliamo il padding testuale e usiamo un'altezza responsiva */
-      padding: 0;
-      height: clamp(70px, 12vh, 140px);
-
-      overflow: hidden; /* maschera per crop */
-      display: block;
     }
 
-    button#runBtn.btn-img img {
+    .btn-wrap {
+      height: clamp(90px, 14vh, 180px);
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .btn-wrap img {
       width: 100%;
       height: 100%;
       display: block;
-      object-fit: cover;        /* RIEMPI e CROPA */
-      object-position: center;  /* crop centrato */
+      object-fit: cover;
+      object-position: center;
     }
 
+    /* ---------- MISC ---------- */
     .grid-custom {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -158,7 +160,7 @@
 <body>
   <div class="panel">
 
-    <!-- LOGO al posto del testo -->
+    <!-- LOGO -->
     <div class="logo-wrap">
       <img class="logo" src="LILIMPOSER.png" alt="Lil Imposer">
     </div>
@@ -199,9 +201,11 @@
       <span>Drop The BooK</span>
     </div>
 
-    <!-- BOTTONE con immagine al posto del testo -->
+    <!-- DOWNLOAD -->
     <button id="runBtn" class="btn-img">
-      <img src="DOWNLOAD.png" alt="Download">
+      <div class="btn-wrap">
+        <img src="DOWNLOAD.png" alt="Download">
+      </div>
     </button>
 
   </div>
@@ -223,13 +227,11 @@
     }
 
     sheetSelect.addEventListener('change', toggleCustomSheet);
-
     uploadZone.addEventListener('click', () => pdfFile.click());
 
     pdfFile.addEventListener('change', async (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
-
       const arrayBuffer = await file.arrayBuffer();
       loadedPdf = await PDFLib.PDFDocument.load(arrayBuffer);
       autoCalculateSignatures();
@@ -237,26 +239,19 @@
 
     function autoCalculateSignatures() {
       if (!loadedPdf) return;
-
       let total = loadedPdf.getPageCount();
       if (total % 4 !== 0) total = Math.ceil(total / 4) * 4;
 
       const plan = [];
       let tempTotal = total;
-
       while (tempTotal >= 16) {
         plan.push(16);
         tempTotal -= 16;
       }
-
       if (tempTotal > 0) {
-        if (plan.length > 0) {
-          plan.splice(plan.length - 1, 0, tempTotal);
-        } else {
-          plan.push(tempTotal);
-        }
+        if (plan.length > 0) plan.splice(plan.length - 1, 0, tempTotal);
+        else plan.push(tempTotal);
       }
-
       sigInput.value = plan.join(', ');
     }
 
@@ -276,29 +271,15 @@
         }
 
         const sheetW = pt(sW_mm), sheetH = pt(sH_mm);
-
-        const sigPlan = sigInput.value
-          .split(',')
-          .map(n => parseInt(n.trim(), 10))
-          .filter(n => Number.isFinite(n) && n > 0);
-
-        if (sigPlan.length === 0) return alert("INVALID SIGNATURE SEQUENCE.");
-
+        const sigPlan = sigInput.value.split(',').map(n => parseInt(n.trim())).filter(Boolean);
         const embeddedPages = await outDoc.embedPages(loadedPdf.getPages());
 
         let totalProcessed = 0;
-
         for (const sigSize of sigPlan) {
           for (let i = 0; i < sigSize / 2; i++) {
             const sheet = outDoc.addPage([sheetW, sheetH]);
-
-            const lIdx = (i % 2 === 0)
-              ? (totalProcessed + sigSize) - 1 - i
-              : totalProcessed + i;
-
-            const rIdx = (i % 2 === 0)
-              ? totalProcessed + i
-              : (totalProcessed + sigSize) - 1 - i;
+            const lIdx = (i % 2 === 0) ? (totalProcessed + sigSize) - 1 - i : totalProcessed + i;
+            const rIdx = (i % 2 === 0) ? totalProcessed + i : (totalProcessed + sigSize) - 1 - i;
 
             const draw = (idx, side) => {
               if (idx >= embeddedPages.length) return;
@@ -311,21 +292,18 @@
             draw(lIdx, 'left');
             draw(rIdx, 'right');
           }
-
           totalProcessed += sigSize;
         }
 
         const pdfBytes = await outDoc.save();
         const blob = new Blob([pdfBytes], { type: 'application/pdf' });
         window.open(URL.createObjectURL(blob));
-
       } catch (e) {
         console.error(e);
         alert("SOMETHING BROKE. CHECK CONSOLE.");
       }
     });
 
-    // init
     toggleCustomSheet();
   </script>
 </body>
