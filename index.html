@@ -42,7 +42,7 @@
       box-shadow: 0 0 15px #fff, 0 0 30px rgba(255,255,255,0.5), inset 0 0 10px #fff;
     }
 
-    /* ---------- LOGO (cover) ---------- */
+    /* ---------- LOGO ---------- */
     .logo-wrap {
       height: clamp(90px, 18vh, 200px);
       width: 100%;
@@ -52,9 +52,7 @@
     .logo {
       width: 100%;
       height: 100%;
-      display: block;
       object-fit: cover;
-      object-position: center;
     }
 
     /* ---------- SECTIONS ---------- */
@@ -77,382 +75,224 @@
     }
 
     label {
-      display: block;
       font-size: 0.8rem;
       font-weight: bold;
       background: var(--chrome-gradient);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       margin-bottom: 5px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
+      display:block;
     }
 
     input, select {
       width: 100%;
-      padding: clamp(8px, 1.5vh, 15px);
+      padding: 10px;
       background: #000;
       color: #fff;
-      font-family: 'Impact', sans-serif;
-      font-size: clamp(1rem, 2vh, 1.2rem);
-      text-transform: uppercase;
+      font-family: Impact, sans-serif;
       border: 2px solid;
       border-image: var(--chrome-border) 1;
-      outline: none;
     }
 
-    /* ---------- TERMINAL MONITOR (fit check) ---------- */
-    #monitor{
-      margin-top: 10px;
-      font-family: "Courier New", monospace;
-      font-size: 0.8rem;
-      background: #000;
-      color: #888;
-      padding: 12px;
-      border-radius: 5px;
-      border: 1px solid #333;
-      min-height: 40px;
-      line-height: 1.35;
-    }
-    .monitor-ok { color: #00ff00 !important; }
-    .monitor-error { color: #ff4757 !important; }
-
-    /* ---------- UPLOAD (cover image) ---------- */
-    .upload-zone {
-      background: transparent;
-      border: none;
-      padding: 0;
-      margin-bottom: clamp(10px, 2vh, 20px);
-      width: 100%;
-      cursor: pointer;
-      user-select: none;
-    }
-    .upload-wrap {
-      height: clamp(90px, 14vh, 180px);
-      width: 100%;
-      overflow: hidden;
-    }
-    .upload-wrap img {
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: cover;
-      object-position: center;
-    }
-
-    /* ---------- DOWNLOAD BUTTON (cover) ---------- */
-    .btn-img {
-      background: transparent;
-      border: none;
-      padding: 0;
-      width: 100%;
-      cursor: pointer;
-    }
-    .btn-wrap {
-      height: clamp(90px, 14vh, 180px);
-      width: 100%;
-      overflow: hidden;
-    }
-    .btn-wrap img {
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: cover;
-      object-position: center;
-    }
-
-    /* ---------- SIZES ROW (Select 50% + W 25% + H 25%) ---------- */
+    /* ---------- SIZES ROW ---------- */
     .sizes-row {
       display: flex;
       gap: 12px;
-      align-items: flex-end;
-      flex-wrap: nowrap;
     }
-    .sizes-row .col-50 { flex: 2 1 0; }
-    .sizes-row .col-25 { flex: 1 1 0; }
-    .sizes-row .col-50,
-    .sizes-row .col-25 { min-width: 0; }
+    .col-50 { flex: 2; }
+    .col-25 { flex: 1; }
 
-    @media (max-width: 520px) {
-      .sizes-row { flex-wrap: wrap; }
-      .sizes-row .col-50,
-      .sizes-row .col-25 { flex: 1 1 100%; }
+    /* ---------- TERMINAL ---------- */
+    #monitor {
+      margin-top: 10px;
+      font-family: "Courier New", monospace;
+      background: #000;
+      padding: 10px;
+      border: 1px solid #333;
+      font-size: 0.8rem;
+    }
+    .monitor-ok { color: #00ff00; }
+    .monitor-error { color: #ff4757; }
+
+    /* ---------- UPLOAD ---------- */
+    .upload-zone, .btn-img {
+      background: none;
+      border: none;
+      width: 100%;
+      cursor: pointer;
+    }
+    .upload-wrap, .btn-wrap {
+      height: 120px;
+      overflow: hidden;
+    }
+    .upload-wrap img, .btn-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
-    .hidden { display: none !important; }
+    /* ---------- CREDITS ---------- */
+    .credits {
+      position: fixed;
+      bottom: 12px;
+      left: 14px;
+      font-family: Helvetica, Arial, sans-serif;
+      font-weight: bold;
+      font-size: 0.75rem;
+      color: #888;
+      z-index: 999;
+    }
+
+    .credits a {
+      font-family: Impact, sans-serif;
+      color: #fff;
+      text-decoration: none;
+    }
+    .credits a:hover {
+      text-decoration: underline;
+    }
+
+    .hidden { display:none }
   </style>
 </head>
 
 <body>
-  <div class="panel">
 
-    <!-- LOGO -->
-    <div class="logo-wrap">
-      <img class="logo" src="LILIMPOSER.png" alt="Lil Imposer">
-    </div>
+<div class="panel">
 
-    <div class="section">
-      <span class="section-title">Paper</span>
-
-      <div class="sizes-row">
-        <div class="col-50">
-          <label>SIZES</label>
-          <select id="sheetSelect">
-            <option value="210,297">A4 (Vertical)</option>
-            <option value="297,210">A4 (Horizontal)</option>
-
-            <option value="420,297">A3 (Horizontal)</option>
-            <option value="297,420">A3 (Vertical)</option>
-
-            <option value="450,320">SRA3 (Horizontal)</option>
-            <option value="320,450">SRA3 (Vertical)</option>
-
-            <option value="594,420">A2 (Horizontal)</option>
-            <option value="420,594">A2 (Vertical)</option>
-
-            <option value="500,700">50x70 (Vertical)</option>
-            <option value="700,500">50x70 (Horizontal)</option>
-
-            <option value="700,1000">70x100 (Vertical)</option>
-            <option value="1000,700">70x100 (Horizontal)</option>
-
-            <option value="custom">CUSTOM</option>
-          </select>
-
-        </div>
-
-        <div class="col-25" id="customWCol">
-          <label>W mm</label>
-          <input type="number" id="customW" />
-        </div>
-
-        <div class="col-25" id="customHCol">
-          <label>H mm</label>
-          <input type="number" id="customH" />
-        </div>
-      </div>
-
-      <div id="monitor">&gt; Carica un PDF per iniziare...</div>
-    </div>
-
-    <div class="section">
-      <span class="section-title">Signatures</span>
-      <label>SEQUENCE</label>
-      <input type="text" id="sigInput" placeholder="SEQUENCE" />
-    </div>
-
-    <!-- UPLOAD -->
-    <div class="upload-zone" id="uploadZone">
-      <input type="file" id="pdfFile" accept="application/pdf" class="hidden">
-      <div class="upload-wrap">
-        <img src="DROPTHEBOOK.png" alt="Drop The Book">
-      </div>
-    </div>
-
-    <!-- DOWNLOAD -->
-    <button id="runBtn" class="btn-img">
-      <div class="btn-wrap">
-        <img src="DOWNLOAD.png" alt="Download">
-      </div>
-    </button>
-
+  <div class="logo-wrap">
+    <img class="logo" src="LILIMPOSER.png">
   </div>
 
-  <script>
-    const pt = (mm) => (mm * 72) / 25.4;
-    const ptToMm = (p) => (p * 25.4) / 72;
+  <div class="section">
+    <span class="section-title">Paper</span>
 
-    // ✅ CROP “INNER MARGIN” per PDF con abbondanze/segni (InDesign)
-    // 0.3 inch = 21.6 pt = 7.62 mm
-    const INNER_CROP_INCH = 0.3;
-    const INNER_CROP_PT = INNER_CROP_INCH * 72;      // 21.6 pt
-    const INNER_CROP_MM = INNER_CROP_INCH * 25.4;    // 7.62 mm
+    <div class="sizes-row">
+      <div class="col-50">
+        <label>SIZES</label>
+        <select id="sheetSelect">
+          <option value="210,297">A4 (Vertical)</option>
+          <option value="297,210">A4 (Horizontal)</option>
+          <option value="420,297">A3 (Horizontal)</option>
+          <option value="297,420">A3 (Vertical)</option>
+          <option value="450,320">SRA3 (Horizontal)</option>
+          <option value="320,450">SRA3 (Vertical)</option>
+          <option value="custom">CUSTOM</option>
+        </select>
+      </div>
+      <div class="col-25" id="customWCol">
+        <label>W mm</label>
+        <input type="number" id="customW">
+      </div>
+      <div class="col-25" id="customHCol">
+        <label>H mm</label>
+        <input type="number" id="customH">
+      </div>
+    </div>
 
-    let loadedPdf = null;
+    <div id="monitor">> Load a PDF...</div>
+  </div>
 
-    const sheetSelect = document.getElementById('sheetSelect');
-    const customW = document.getElementById('customW');
-    const customH = document.getElementById('customH');
-    const customWCol = document.getElementById('customWCol');
-    const customHCol = document.getElementById('customHCol');
+  <div class="section">
+    <span class="section-title">Signatures</span>
+    <input type="text" id="sigInput">
+  </div>
 
-    const pdfFile = document.getElementById('pdfFile');
-    const uploadZone = document.getElementById('uploadZone');
-    const sigInput = document.getElementById('sigInput');
-    const runBtn = document.getElementById('runBtn');
-    const monitor = document.getElementById('monitor');
+  <div class="upload-zone" id="uploadZone">
+    <input type="file" id="pdfFile" hidden>
+    <div class="upload-wrap">
+      <img src="DROPTHEBOOK.png">
+    </div>
+  </div>
 
-    function setCustomVisibility() {
-      const isCustom = sheetSelect.value === 'custom';
-      customWCol.classList.toggle('hidden', !isCustom);
-      customHCol.classList.toggle('hidden', !isCustom);
-      checkFit();
+  <button id="runBtn" class="btn-img">
+    <div class="btn-wrap">
+      <img src="DOWNLOAD.png">
+    </div>
+  </button>
+
+</div>
+
+<!-- CREDITS -->
+<div class="credits">
+  ©2026, Designed by 
+  <a href="https://www.instagram.com/alessandro_lanfrancotti/" target="_blank">
+    Alessandro Lanfrancotti
+  </a>
+</div>
+
+<script>
+  const pt = mm => mm * 72 / 25.4;
+  const ptToMm = p => p * 25.4 / 72;
+  const INNER_CROP_PT = 0.3 * 72;
+
+  let loadedPdf = null;
+
+  const sheetSelect = document.getElementById("sheetSelect");
+  const customW = document.getElementById("customW");
+  const customH = document.getElementById("customH");
+  const customWCol = document.getElementById("customWCol");
+  const customHCol = document.getElementById("customHCol");
+  const monitor = document.getElementById("monitor");
+
+  function getSheetMm(){
+    if(sheetSelect.value === "custom"){
+      return [parseFloat(customW.value)||0, parseFloat(customH.value)||0];
     }
+    return sheetSelect.value.split(",").map(Number);
+  }
 
-    function getSheetMm() {
-      if (sheetSelect.value === 'custom') {
-        const w = parseFloat(customW.value) || 0;
-        const h = parseFloat(customH.value) || 0;
-        return [w, h];
-      }
-      return sheetSelect.value.split(',').map(Number);
+  function checkFit(){
+    if(!loadedPdf) return;
+    const [sW,sH] = getSheetMm();
+    const p = loadedPdf.getPages()[0];
+    const pW = ptToMm(p.getWidth()) - 7.62;
+    const pH = ptToMm(p.getHeight());
+    if(sW >= pW*2 && sH >= pH){
+      monitor.textContent = "> STATUS OK";
+      monitor.className="monitor-ok";
+    } else {
+      monitor.textContent = "> SHEET TOO SMALL";
+      monitor.className="monitor-error";
     }
+  }
 
-    // Monitor: controlla se il foglio contiene l’imposizione 2-up (left+right)
-    // ✅ ora considera anche il crop interno 0.3"
-    function checkFit() {
-      if (!loadedPdf) {
-        monitor.textContent = "> Carica un PDF per iniziare...";
-        monitor.className = "";
-        return;
-      }
+  document.getElementById("uploadZone").onclick=()=>pdfFile.click();
 
-      const [sW, sH] = getSheetMm();
-      const firstPage = loadedPdf.getPages()[0];
-      const pW = ptToMm(firstPage.getWidth());
-      const pH = ptToMm(firstPage.getHeight());
-
-      // 2-up: ogni pagina perde INNER_CROP_MM sul margine interno (quindi -7.62mm)
-      const placedW = Math.max(0, pW - INNER_CROP_MM);
-      const reqW = placedW * 2;
-      const reqH = pH;
-
-      if (sW >= reqW && sH >= reqH) {
-        monitor.innerHTML = `> STATO: OK | Ingombro: ${reqW.toFixed(1)}×${reqH.toFixed(1)} mm (crop ${INNER_CROP_MM.toFixed(2)}mm)`;
-        monitor.className = "monitor-ok";
-      } else {
-        monitor.innerHTML = `> ERRORE: FOGLIO PICCOLO | Min: ${reqW.toFixed(1)}×${reqH.toFixed(1)} mm (crop ${INNER_CROP_MM.toFixed(2)}mm)`;
-        monitor.className = "monitor-error";
-      }
-    }
-
-    function autoCalculateSignatures() {
-      if (!loadedPdf) return;
-
-      let total = loadedPdf.getPageCount();
-      if (total % 4 !== 0) total = Math.ceil(total / 4) * 4;
-
-      const plan = [];
-      let tempTotal = total;
-
-      while (tempTotal >= 16) {
-        plan.push(16);
-        tempTotal -= 16;
-      }
-
-      if (tempTotal > 0) {
-        if (plan.length > 0) plan.splice(plan.length - 1, 0, tempTotal);
-        else plan.push(tempTotal);
-      }
-
-      sigInput.value = plan.join(', ');
-    }
-
-    sheetSelect.addEventListener('change', setCustomVisibility);
-    customW.addEventListener('input', checkFit);
-    customH.addEventListener('input', checkFit);
-
-    uploadZone.addEventListener('click', () => pdfFile.click());
-
-    pdfFile.addEventListener('change', async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-
-      const arrayBuffer = await file.arrayBuffer();
-      loadedPdf = await PDFLib.PDFDocument.load(arrayBuffer);
-
-      autoCalculateSignatures();
-      checkFit();
-    });
-
-    runBtn.addEventListener('click', async () => {
-      if (!loadedPdf) return alert("LOAD THE HEAT.");
-
-      try {
-        const { PDFDocument } = PDFLib;
-        const outDoc = await PDFDocument.create();
-
-        const [sW_mm, sH_mm] = getSheetMm();
-        const sheetW = pt(sW_mm), sheetH = pt(sH_mm);
-
-        const sigPlan = sigInput.value
-          .split(',')
-          .map(n => parseInt(n.trim(), 10))
-          .filter(n => Number.isFinite(n) && n > 0);
-
-        if (sigPlan.length === 0) return alert("INVALID SIGNATURE SEQUENCE.");
-
-        const srcPages = loadedPdf.getPages();
-
-        // ✅ CREIAMO DUE SET DI PAGINE “EMBED”:
-        // - per quando una pagina va a SINISTRA: tagliamo il bordo DESTRO (margine interno)
-        // - per quando una pagina va a DESTRA:  tagliamo il bordo SINISTRO (margine interno)
-        const bboxesForLeftPlacement = srcPages.map(p => {
-          const w = p.getWidth();
-          const h = p.getHeight();
-          const crop = Math.min(INNER_CROP_PT, w); // sicurezza
-          return { left: 0, bottom: 0, right: w - crop, top: h };
-        });
-
-        const bboxesForRightPlacement = srcPages.map(p => {
-          const w = p.getWidth();
-          const h = p.getHeight();
-          const crop = Math.min(INNER_CROP_PT, w); // sicurezza
-          return { left: crop, bottom: 0, right: w, top: h };
-        });
-
-        const embeddedLeft = await outDoc.embedPages(srcPages, bboxesForLeftPlacement);
-        const embeddedRight = await outDoc.embedPages(srcPages, bboxesForRightPlacement);
-
-        let totalProcessed = 0;
-
-        for (const sigSize of sigPlan) {
-          for (let i = 0; i < sigSize / 2; i++) {
-            const sheet = outDoc.addPage([sheetW, sheetH]);
-
-            const lIdx = (i % 2 === 0)
-              ? (totalProcessed + sigSize) - 1 - i
-              : totalProcessed + i;
-
-            const rIdx = (i % 2 === 0)
-              ? totalProcessed + i
-              : (totalProcessed + sigSize) - 1 - i;
-
-            const draw = (idx, side) => {
-              if (idx >= srcPages.length) return;
-
-              // ✅ scegliamo l’embed corretto in base al lato,
-              // così il crop è sempre sul margine interno
-              const p = (side === 'left') ? embeddedLeft[idx] : embeddedRight[idx];
-
-              const x = (side === 'left')
-                ? (sheetW / 2) - p.width
-                : (sheetW / 2);
-
-              const y = (sheetH - p.height) / 2;
-
-              sheet.drawPage(p, { x, y, width: p.width, height: p.height });
-            };
-
-            draw(lIdx, 'left');
-            draw(rIdx, 'right');
-          }
-
-          totalProcessed += sigSize;
-        }
-
-        const pdfBytes = await outDoc.save();
-        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-        window.open(URL.createObjectURL(blob));
-      } catch (e) {
-        console.error(e);
-        alert("SOMETHING BROKE. CHECK CONSOLE.");
-      }
-    });
-
-    // init
-    setCustomVisibility();
+  pdfFile.onchange = async e=>{
+    const buf = await e.target.files[0].arrayBuffer();
+    loadedPdf = await PDFLib.PDFDocument.load(buf);
     checkFit();
-  </script>
+    let t = loadedPdf.getPageCount();
+    sigInput.value = Math.ceil(t/16)*16;
+  };
+
+  runBtn.onclick = async ()=>{
+    const {PDFDocument} = PDFLib;
+    const out = await PDFDocument.create();
+    const [sW,sH] = getSheetMm();
+    const sheetW = pt(sW), sheetH = pt(sH);
+
+    const src = loadedPdf.getPages();
+    const leftBoxes = src.map(p=>({left:0,bottom:0,right:p.getWidth()-INNER_CROP_PT,top:p.getHeight()}));
+    const rightBoxes = src.map(p=>({left:INNER_CROP_PT,bottom:0,right:p.getWidth(),top:p.getHeight()}));
+    const leftEmb = await out.embedPages(src,leftBoxes);
+    const rightEmb = await out.embedPages(src,rightBoxes);
+
+    for(let i=0;i<src.length;i+=2){
+      const page = out.addPage([sheetW,sheetH]);
+      page.drawPage(leftEmb[i],{x:sheetW/2-leftEmb[i].width,y:(sheetH-leftEmb[i].height)/2});
+      page.drawPage(rightEmb[i+1],{x:sheetW/2,y:(sheetH-rightEmb[i+1].height)/2});
+    }
+
+    const blob = new Blob([await out.save()],{type:"application/pdf"});
+    window.open(URL.createObjectURL(blob));
+  };
+
+  sheetSelect.onchange=checkFit;
+  customW.oninput=checkFit;
+  customH.oninput=checkFit;
+</script>
+
 </body>
 </html>
