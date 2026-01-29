@@ -18,7 +18,6 @@
         .monitor-error { color: #ff4757 !important; }
         .upload-zone { border: 2px dashed #444; padding: 25px; text-align: center; margin: 20px 0; border-radius: 8px; cursor: pointer; transition: 0.3s; }
         .upload-zone:hover { border-color: #00d1b2; background: #1a1a1a; }
-        .btn-auto { background: #34495e; color: white; border: none; padding: 5px 10px; font-size: 0.7rem; border-radius: 4px; cursor: pointer; margin-top: 5px; }
         button#runBtn { background: #00d1b2; color: #1a1a1a; border: none; padding: 18px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1rem; text-transform: uppercase; margin-top: 10px; }
         #log { margin-top: 15px; font-family: 'Courier New', monospace; font-size: 0.7rem; background: #000; color: #00ff00; padding: 12px; border-radius: 5px; height: 80px; overflow-y: auto; border: 1px solid #333; }
         .hidden { display: none; }
@@ -53,18 +52,9 @@
     </div>
 
     <div class="section">
-        <span class="section-title">2. Parametri Imposizione</span>
-        <div class="grid">
-            <div>
-                <label>Segnature (es: 16, 20)</label>
-                <input type="text" id="sigInput" value="16">
-                <button class="btn-auto" onclick="autoCalculateSignatures()">✨ AUTO-CALCOLO</button>
-            </div>
-            <div>
-                <label>Gutter / Gronda (mm)</label>
-                <input type="number" id="gutterInput" value="0" oninput="checkFit()">
-            </div>
-        </div>
+        <span class="section-title">2. Piano di Imposizione</span>
+        <label>Segnature (es: 16, 16, 8)</label>
+        <input type="text" id="sigInput" placeholder="Verrà calcolato automaticamente">
     </div>
 
     <div class="upload-zone" onclick="document.getElementById('pdfFile').click()">
@@ -105,13 +95,13 @@
         const firstPage = loadedPdf.getPages()[0];
         const pW_mm = ptToMm(firstPage.getWidth());
         const pH_mm = ptToMm(firstPage.getHeight());
-        const g = parseFloat(document.getElementById('gutterInput').value) || 0;
 
-        const totalW = (pW_mm * 2) + g;
+        // Calcolo ingombro: 2 pagine affiancate (senza gutter)
+        const totalW = (pW_mm * 2);
         const totalH = pH_mm;
 
         if (sW >= totalW && sH >= totalH) {
-            monitor.innerText = `> STATO: OK. File ${pW_mm.toFixed(0)}x${pH_mm.toFixed(0)} mm | Ingombro su foglio: ${totalW.toFixed(1)}x${totalH.toFixed(1)} mm.`;
+            monitor.innerText = `> STATO: OK. File ${pW_mm.toFixed(0)}x${pH_mm.toFixed(0)} mm | Ingombro: ${totalW.toFixed(1)}x${totalH.toFixed(1)} mm.`;
             monitor.className = "monitor-ok";
         } else {
             monitor.innerText = `> ERRORE: Foglio troppo piccolo. Richiesto: ${totalW.toFixed(1)}x${totalH.toFixed(1)} mm.`;
@@ -132,14 +122,23 @@
             const arrayBuffer = await file.arrayBuffer();
             loadedPdf = await PDFLib.PDFDocument.load(arrayBuffer);
             writeLog(`PDF caricato: ${loadedPdf.getPageCount()} pagine.`);
+            
+            // Auto-calcolo automatico dopo il caricamento
+            autoCalculateSignatures();
             checkFit();
         }
     };
 
     function autoCalculateSignatures() {
-        if (!loadedPdf) return alert("Prima carica un file PDF!");
+        if (!loadedPdf) return;
         let total = loadedPdf.getPageCount();
-        if (total % 4 !== 0) total = Math.ceil(total / 4) * 4;
+        
+        // Arrotonda sempre a multiplo di 4
+        if (total % 4 !== 0) {
+            total = Math.ceil(total / 4) * 4;
+            writeLog(`Info: Pagine arrotondate a ${total} per chiudere le segnature.`);
+        }
+
         let plan = [], tempTotal = total;
         while (tempTotal > 0) {
             if (tempTotal >= 32) { plan.push(16); tempTotal -= 16; }
@@ -150,45 +149,62 @@
             else { plan.push(tempTotal); tempTotal = 0; }
         }
         document.getElementById('sigInput').value = plan.join(', ');
-        writeLog(`Piano calcolato: ${plan.join(', ')}`);
+        writeLog(`Piano calcolato automaticamente: ${plan.join(', ')}`);
     }
 
     document.getElementById('runBtn').onclick = async () => {
         if (!loadedPdf) return alert("Seleziona un file!");
         try {
-            writeLog("Elaborazione...");
+            writeLog("Elaborazione in corso...");
             const { PDFDocument } = PDFLib;
             const outDoc = await PDFDocument.create();
+            
             let sW_mm, sH_mm;
             if (document.getElementById('sheetSelect').value === 'custom') {
                 sW_mm = parseFloat(document.getElementById('customW').value);
                 sH_mm = parseFloat(document.getElementById('customH').value);
-            } else { [sW_mm, sH_mm] = document.getElementById('sheetSelect').value.split(',').map(Number); }
-            const sheetW = pt(sW_mm), sheetH = pt(sH_mm), gutter = pt(parseFloat(document.getElementById('gutterInput').value));
+            } else { 
+                [sW_mm, sH_mm] = document.getElementById('sheetSelect').value.split(',').map(Number); 
+            }
+            
+            const sheetW = pt(sW_mm), sheetH = pt(sH_mm);
             const sigPlan = document.getElementById('sigInput').value.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+            
             const embeddedPages = await outDoc.embedPages(loadedPdf.getPages());
             let totalProcessed = 0;
+
             for (const sigSize of sigPlan) {
                 for (let i = 0; i < sigSize / 2; i++) {
                     const sheet = outDoc.addPage([sheetW, sheetH]);
+                    
+                    // Logica a quartino semplice (resa per segnature)
                     let lIdx = (i % 2 === 0) ? (totalProcessed + sigSize) - 1 - i : totalProcessed + i;
                     let rIdx = (i % 2 === 0) ? totalProcessed + i : (totalProcessed + sigSize) - 1 - i;
+                    
                     const draw = (idx, side) => {
-                        if (idx >= embeddedPages.length) return;
+                        if (idx >= embeddedPages.length) return; // Gestisce le pagine bianche se il totale non è esatto
                         const p = embeddedPages[idx];
-                        const x = (side === 'left') ? (sheetW / 2) - (gutter / 2) - p.width : (sheetW / 2) + (gutter / 2);
+                        // Centratura sul foglio senza gutter
+                        const x = (side === 'left') ? (sheetW / 2) - p.width : (sheetW / 2);
                         const y = (sheetH - p.height) / 2;
                         sheet.drawPage(p, { x, y, width: p.width, height: p.height });
                     };
-                    draw(lIdx, 'left'); draw(rIdx, 'right');
+                    
+                    draw(lIdx, 'left'); 
+                    draw(rIdx, 'right');
                 }
                 totalProcessed += sigSize;
             }
+
             const pdfBytes = await outDoc.save();
             const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-            window.open(URL.createObjectURL(blob));
-            writeLog("✅ COMPLETATO!");
-        } catch (e) { writeLog(`❌ ERRORE: ${e.message}`); }
+            const url = URL.createObjectURL(blob);
+            window.open(url);
+            writeLog("✅ COMPLETATO! Il PDF si è aperto in una nuova scheda.");
+        } catch (e) { 
+            writeLog(`❌ ERRORE: ${e.message}`); 
+            console.error(e);
+        }
     };
 </script>
 </body>
