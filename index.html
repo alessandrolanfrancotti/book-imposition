@@ -188,17 +188,17 @@
     <h1>Lil Imposer</h1>
     
     <div class="section">
-        <span class="section-title">The Whip (Paper)</span>
+        <span class="section-title">Paper</span>
         <div class="grid">
             <div>
-                <label>DIMENSIONS</label>
+                <label>SIZES</label>
                 <select id="sheetSelect" onchange="toggleCustomSheet(); checkFit();">
-                    <option value="420,297">A3 / PLATINUM</option>
-                    <option value="450,320">SRA3 / COLD ICE</option>
-                    <option value="594,420">A2 / BIG STEPPA</option>
-                    <option value="500,700">50x70 / OG BLOCK</option>
-                    <option value="700,1000">70x100 / WORLD BOSS</option>
-                    <option value="custom">-- CUSTOM DRIP --</option>
+                    <option value="420,297">A3 </option>
+                    <option value="450,320">SRA3</option>
+                    <option value="594,420">A2</option>
+                    <option value="500,700">50x70</option>
+                    <option value="700,1000">70x100 (THE BIG BOSS)</option>
+                    <option value="custom">CUSTOM</option>
                 </select>
             </div>
             <div id="customSheetDims" class="grid hidden">
@@ -210,14 +210,14 @@
     </div>
 
     <div class="section">
-        <span class="section-title">The Flow (Signatures)</span>
+        <span class="section-title">Signatures</span>
         <label>SEQUENCE</label>
         <input type="text" id="sigInput" placeholder="...">
     </div>
 
     <div class="upload-zone" onclick="document.getElementById('pdfFile').click()">
         <input type="file" id="pdfFile" accept="application/pdf" style="display:none">
-        <span class="gothic-text">DROP THE HEAT</span>
+        <span class="gothic-text">DROP THE BOOK</span>
     </div>
 
     <button id="runBtn">Bless this File</button>
