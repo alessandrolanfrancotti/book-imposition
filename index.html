@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Book Imposer Pro V16</title>
+    <title>Book Imposer Pro V19 - Full Industrial</title>
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; display: flex; justify-content: center; padding: 20px; margin: 0; }
@@ -26,7 +26,7 @@
 <body>
 
 <div class="panel">
-    <h1>📖 Book Imposer Pro V16</h1>
+    <h1>📖 Book Imposer Pro V19</h1>
     
     <div class="section">
         <span class="section-title">1. Configurazione Stampa</span>
@@ -46,6 +46,8 @@
                 <select id="modeSelect" onchange="checkFit()">
                     <option value="accavallato">Quartini accavallati (2-up)</option>
                     <option value="16esimo_foglio">16esimo su foglio intero (4x2)</option>
+                    <option value="12esimo_foglio">12esimo su foglio intero (3x2)</option>
+                    <option value="8avo_foglio">8avo su foglio intero (2x2)</option>
                 </select>
             </div>
         </div>
@@ -76,7 +78,7 @@
         <span id="fileStatus">Trascina o clicca per caricare il PDF</span>
     </div>
 
-    <button id="runBtn">Genera Imposizione</button>
+    <button id="runBtn">Genera Imposizione Professional</button>
     <div id="log">Pronto.</div>
 </div>
 
@@ -103,8 +105,15 @@
         const pW = ptToMm(firstPage.getWidth());
         const pH = ptToMm(firstPage.getHeight());
         const g = parseFloat(document.getElementById('gutterInput').value) || 0;
-        let reqW = (mode === 'accavallato') ? (pW * 2) + g : (pW * 4) + (g * 3);
-        let reqH = (mode === 'accavallato') ? pH : (pH * 2) + g;
+        
+        let cols = 2, rows = 1;
+        if (mode === '16esimo_foglio') { cols = 4; rows = 2; }
+        else if (mode === '12esimo_foglio') { cols = 3; rows = 2; }
+        else if (mode === '8avo_foglio') { cols = 2; rows = 2; }
+
+        let reqW = (pW * cols) + (g * (cols - 1));
+        let reqH = (pH * rows) + (g * (rows - 1));
+
         if (sW >= reqW && sH >= reqH) {
             monitor.innerHTML = `> STATO: OK | Ingombro: ${reqW.toFixed(1)}x${reqH.toFixed(1)} mm`;
             monitor.className = "monitor-ok";
@@ -142,6 +151,7 @@
             else if (temp === 28) { plan.push(12, 16); temp = 0; }
             else if (temp === 24) { plan.push(8, 16); temp = 0; }
             else if (temp === 20) { plan.push(20); temp = 0; }
+            else if (temp === 16) { plan.push(16); temp = 0; }
             else { plan.push(temp); temp = 0; }
         }
         document.getElementById('sigInput').value = plan.join(', ');
@@ -169,8 +179,11 @@
             let currentOffset = totalProcessed;
 
             for (let subSize of subSigs) {
-                if (mode === 'accavallato' || subSize === 4) {
-                    writeLog(`Generazione Quartino ${subSize} pag...`);
+                // Determina lo schema basandosi sulla selezione o sulla coda (subSize)
+                let cols, rows, schemaB, schemaV;
+                let activeMode = (subSize === 4) ? 'accavallato' : mode;
+
+                if (activeMode === 'accavallato') {
                     for (let i = 0; i < subSize / 2; i++) {
                         const sheet = outDoc.addPage([sheetW, sheetH]);
                         let lIdx = (i % 2 === 0) ? (currentOffset + subSize) - 1 - i : currentOffset + i;
@@ -183,33 +196,26 @@
                         };
                         draw(lIdx, 'left'); draw(rIdx, 'right');
                     }
-                } 
-                else if (mode === '16esimo_foglio') {
-                    let cols, rows, schemaB, schemaV;
+                } else {
                     if (subSize === 16) {
                         cols = 4; rows = 2;
                         schemaB = [{i:4,r:180,c:0,row:1},{i:11,r:180,c:1,row:1},{i:8,r:180,c:2,row:1},{i:7,r:180,c:3,row:1},{i:3,r:0,c:0,row:0},{i:12,r:0,c:1,row:0},{i:15,r:0,c:2,row:0},{i:0,r:0,c:3,row:0}];
                         schemaV = [{i:6,r:180,c:0,row:1},{i:9,r:180,c:1,row:1},{i:10,r:180,c:2,row:1},{i:5,r:180,c:3,row:1},{i:1,r:0,c:0,row:0},{i:14,r:0,c:1,row:0},{i:13,r:0,c:2,row:0},{i:2,r:0,c:3,row:0}];
-                    }
-                    else if (subSize === 8) {
-                        // Schema Ottavo standard (2x2) per piega a croce
-                        cols = 2; rows = 2;
-                        schemaB = [
-                            {i:4, r:180, c:0, row:1}, {i:3, r:180, c:1, row:1}, // Sopra (ruotate)
-                            {i:5, r:0,   c:0, row:0}, {i:2, r:0,   c:1, row:0}  // Sotto (dritte)
-                        ];
-                        schemaV = [
-                            {i:1, r:180, c:0, row:1}, {i:6, r:180, c:1, row:1}, // Sopra (ruotate)
-                            {i:0, r:0,   c:0, row:0}, {i:7, r:0,   c:1, row:0}  // Sotto (dritte)
-                        ];
-                    }
-                    else if (subSize === 12) {
+                    } else if (subSize === 12) {
                         cols = 3; rows = 2;
-                        schemaB = [{i:3,r:180,c:0,row:1},{i:8,r:180,c:1,row:1},{i:7,r:180,c:2,row:1},{i:2,r:0,c:0,row:0},{i:9,r:0,c:1,row:0},{i:0,r:0,c:2,row:0}];
-                        schemaV = [{i:5,r:180,c:0,row:1},{i:6,r:180,c:1,row:1},{i:11,r:180,c:2,row:1},{i:4,r:0,c:0,row:0},{i:7,r:0,c:1,row:0},{i:1,r:0,c:2,row:0}];
+                        // Schema 12esimo professionale (3x2) - Testa a testa
+                        schemaB = [{i:7,r:180,c:0,row:1},{i:4,r:180,c:1,row:1},{i:11,r:180,c:2,row:1},{i:6,r:0,c:0,row:0},{i:5,r:0,c:1,row:0},{i:0,r:0,c:2,row:0}];
+                        schemaV = [{i:10,r:180,c:0,row:1},{i:1,r:180,c:1,row:1},{i:8,r:180,c:2,row:1},{i:11,r:0,c:0,row:0},{i:0,r:0,c:1,row:0},{i:3,r:0,c:2,row:0}];
+                        // Sostituzione con schema 12 standard (Bianca)
+                        schemaB = [{i:8,r:180,c:0,row:1},{i:3,r:180,c:1,row:1},{i:4,r:180,c:2,row:1},{i:9,r:0,c:0,row:0},{i:2,r:0,c:1,row:0},{i:11,r:0,c:2,row:0}];
+                        schemaV = [{i:10,r:180,c:0,row:1},{i:1,r:180,c:1,row:1},{i:6,r:180,c:2,row:1},{i:7,r:0,c:0,row:0},{i:0,r:0,c:1,row:0},{i:5,r:0,c:2,row:0}];
+                    } else if (subSize === 8) {
+                        cols = 2; rows = 2;
+                        schemaB = [{i:4,r:180,c:0,row:1},{i:3,r:180,c:1,row:1},{i:5,r:0,c:0,row:0},{i:2,r:0,c:1,row:0}];
+                        schemaV = [{i:1,r:180,c:0,row:1},{i:6,r:180,c:1,row:1},{i:0,r:0,c:0,row:0},{i:7,r:0,c:1,row:0}];
                     }
 
-                    writeLog(`Generazione Segnatura ${subSize} in griglia...`);
+                    writeLog(`Imposition ${subSize} pag in griglia...`);
                     const bianca = outDoc.addPage([sheetW, sheetH]);
                     const volta = outDoc.addPage([sheetW, sheetH]);
                     const drawGrid = (page, schema) => {
