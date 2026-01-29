@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⛓️ Lil Imposer - Full Chrome Edition ⛓️</title>
+    <title>⛓️ Lil Imposer - Pro Binding Edition ⛓️</title>
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
     <style>
@@ -12,13 +12,8 @@
             --chrome-border: linear-gradient(145deg, #fff, #444, #fff, #888);
         }
 
-        /* Reset e Full Height */
         * { box-sizing: border-box; }
-        html, body { 
-            height: 100%; 
-            margin: 0; 
-            overflow: hidden; /* Elimina lo scroll */
-        }
+        html, body { height: 100%; margin: 0; overflow: hidden; }
 
         body { 
             font-family: 'Impact', sans-serif; 
@@ -30,13 +25,12 @@
             padding: 10px;
         }
 
-        /* Panel adattivo */
         .panel { 
             background: #000;
             padding: clamp(20px, 4vh, 45px); 
             width: 100%; 
             max-width: 700px; 
-            max-height: 98vh; /* Quasi tutta l'altezza */
+            max-height: 98vh;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -64,7 +58,6 @@
             margin-bottom: clamp(10px, 2vh, 20px); 
             border: 2px solid;
             border-image: var(--chrome-border) 1;
-            box-shadow: 0 0 10px rgba(255,255,255,0.3);
         }
 
         .section-title { 
@@ -78,39 +71,24 @@
         }
 
         label { 
-            display: block; 
-            font-size: 0.8rem; 
+            display: block; font-size: 0.8rem; font-weight: bold;
             background: var(--chrome-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 5px; 
-            text-transform: uppercase; 
-            letter-spacing: 2px;
-            font-weight: bold;
+            margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px;
         }
 
         input, select { 
-            width: 100%; 
-            padding: clamp(8px, 1.5vh, 15px); 
-            background: #000; 
-            color: #fff; 
-            font-family: 'Impact', sans-serif;
-            font-size: clamp(1rem, 2vh, 1.2rem);
-            text-transform: uppercase;
-            outline: none;
-            border: 2px solid;
-            border-image: var(--chrome-border) 1;
+            width: 100%; padding: clamp(8px, 1.5vh, 15px); 
+            background: #000; color: #fff; font-family: 'Impact', sans-serif;
+            font-size: clamp(1rem, 2vh, 1.2rem); text-transform: uppercase;
+            border: 2px solid; border-image: var(--chrome-border) 1; outline: none;
         }
 
         .upload-zone { 
-            border: 3px solid;
-            border-image: var(--chrome-border) 1;
-            padding: clamp(20px, 5vh, 40px); 
-            text-align: center; 
-            margin-bottom: clamp(10px, 2vh, 20px); 
-            background: #000;
-            cursor: pointer; 
-            transition: 0.3s;
+            border: 3px solid; border-image: var(--chrome-border) 1;
+            padding: clamp(20px, 5vh, 40px); text-align: center; margin-bottom: clamp(10px, 2vh, 20px);
+            background: #000; cursor: pointer;
         }
         
         .upload-zone span { 
@@ -122,42 +100,20 @@
         }
 
         button#runBtn { 
-            background: var(--chrome-gradient);
-            color: #000; 
-            border: 2px solid #fff; 
-            padding: clamp(15px, 3vh, 25px); 
-            width: 100%; 
-            font-family: 'UnifrakturCook', cursive;
-            font-weight: 900; 
-            cursor: pointer; 
-            font-size: clamp(2rem, 5vh, 3rem); 
-            box-shadow: 0 0 20px #fff;
-            transition: 0.2s;
-            text-transform: uppercase;
+            background: var(--chrome-gradient); color: #000; 
+            border: 2px solid #fff; padding: clamp(15px, 3vh, 25px); 
+            width: 100%; font-family: 'UnifrakturCook', cursive;
+            font-weight: 900; cursor: pointer; 
+            font-size: clamp(2rem, 5vh, 3rem); text-transform: uppercase;
         }
 
-        button#runBtn:hover { filter: brightness(1.2); transform: scale(1.01); }
-
-        .grid-custom { 
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;
-        }
-
+        .grid-custom { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
         .hidden { display: none !important; }
-
-        .flare {
-            position: absolute; width: 2px; height: 2px; background: #fff;
-            box-shadow: 0 0 40px 10px #fff; pointer-events: none;
-        }
     </style>
 </head>
 <body>
 
 <div class="panel">
-    <div class="flare" style="top:0; left:0;"></div>
-    <div class="flare" style="top:0; right:0;"></div>
-    <div class="flare" style="bottom:0; left:0;"></div>
-    <div class="flare" style="bottom:0; right:0;"></div>
-    
     <h1>Lil Imposer</h1>
     
     <div class="section">
@@ -171,7 +127,6 @@
             <option value="700,1000">70x100</option>
             <option value="custom">CUSTOM</option>
         </select>
-        
         <div id="customSheetDims" class="grid-custom hidden">
             <div><label>W mm</label><input type="number" id="customW"></div>
             <div><label>H mm</label><input type="number" id="customH"></div>
@@ -193,7 +148,6 @@
 </div>
 
 <script>
-    /* JavaScript logic stays the same but cleaned for speed */
     const pt = (mm) => (mm * 72) / 25.4;
     let loadedPdf = null;
 
@@ -215,11 +169,26 @@
         if (!loadedPdf) return;
         let total = loadedPdf.getPageCount();
         if (total % 4 !== 0) total = Math.ceil(total / 4) * 4;
-        let plan = [], tempTotal = total;
-        while (tempTotal > 0) {
-            if (tempTotal >= 16) { plan.push(16); tempTotal -= 16; }
-            else { plan.push(tempTotal); tempTotal = 0; }
+        
+        let plan = [];
+        let tempTotal = total;
+        
+        // Riempie con segnature da 16
+        while (tempTotal >= 16) {
+            plan.push(16);
+            tempTotal -= 16;
         }
+        
+        // Gestione dell'avanzo (la segnatura debole)
+        if (tempTotal > 0) {
+            if (plan.length > 0) {
+                // Inserisce l'avanzo come PENULTIMA posizione
+                plan.splice(plan.length - 1, 0, tempTotal);
+            } else {
+                plan.push(tempTotal);
+            }
+        }
+        
         document.getElementById('sigInput').value = plan.join(', ');
     }
 
@@ -240,10 +209,12 @@
             
             let totalProcessed = 0;
             for (const sigSize of sigPlan) {
+                // Imposizione a quartino semplice (4 facciate per foglio, 2 per lato)
                 for (let i = 0; i < sigSize / 2; i++) {
                     const sheet = outDoc.addPage([sheetW, sheetH]);
                     let lIdx = (i % 2 === 0) ? (totalProcessed + sigSize) - 1 - i : totalProcessed + i;
                     let rIdx = (i % 2 === 0) ? totalProcessed + i : (totalProcessed + sigSize) - 1 - i;
+                    
                     const draw = (idx, side) => {
                         if (idx >= embeddedPages.length) return;
                         const p = embeddedPages[idx];
@@ -255,7 +226,9 @@
                 }
                 totalProcessed += sigSize;
             }
-            window.open(URL.createObjectURL(new Blob([await outDoc.save()], { type: 'application/pdf' })));
+            const pdfBytes = await outDoc.save();
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            window.open(URL.createObjectURL(blob));
         } catch (e) { console.error(e); }
     };
 </script>
