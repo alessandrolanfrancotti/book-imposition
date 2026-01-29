@@ -2,58 +2,103 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Book Imposer - Signature Mode</title>
+    <title>Book Imposer Pro V8</title>
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: #eee; display: flex; justify-content: center; padding: 20px; }
-        .panel { background: #2d2d2d; padding: 25px; border-radius: 12px; width: 100%; max-width: 550px; border: 1px solid #444; }
-        h1 { color: #00d1b2; text-align: center; margin-bottom: 25px; }
-        .group { background: #383838; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
-        label { display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 8px; }
-        input, select { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #555; background: #222; color: #fff; box-sizing: border-box; }
-        .upload-zone { border: 2px dashed #00d1b2; padding: 20px; text-align: center; margin: 20px 0; border-radius: 8px; cursor: pointer; }
-        button { background: #00d1b2; color: #1a1a1a; border: none; padding: 15px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1rem; }
-        #log { margin-top: 15px; font-family: monospace; font-size: 0.75rem; background: #000; color: #00ff00; padding: 10px; border-radius: 5px; height: 120px; overflow-y: auto; border: 1px solid #444; }
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .panel { background: #1e1e1e; padding: 25px; border-radius: 12px; width: 100%; max-width: 650px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h1 { color: #00d1b2; text-align: center; margin-bottom: 20px; font-size: 1.5rem; }
+        .section { background: #262626; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #00d1b2; }
+        .section-title { font-size: 0.8rem; font-weight: bold; color: #00d1b2; margin-bottom: 12px; display: block; text-transform: uppercase; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        label { display: block; font-size: 0.75rem; color: #aaa; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #121212; color: #fff; box-sizing: border-box; }
+        .upload-zone { border: 2px dashed #444; padding: 25px; text-align: center; margin: 20px 0; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .upload-zone:hover { border-color: #00d1b2; background: #1a1a1a; }
+        button { background: #00d1b2; color: #1a1a1a; border: none; padding: 18px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1rem; text-transform: uppercase; }
+        #log { margin-top: 15px; font-family: 'Courier New', monospace; font-size: 0.7rem; background: #000; color: #00ff00; padding: 12px; border-radius: 5px; height: 100px; overflow-y: auto; border: 1px solid #333; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
 <div class="panel">
-    <h1>📖 Book Imposer Pro</h1>
+    <h1>📖 Book Imposer Pro V8</h1>
     
-    <div class="group">
-        <label>Formato Foglio di Stampa (Macchina)</label>
-        <select id="sheetSelect">
-            <option value="420,297">A3 (420x297 mm)</option>
-            <option value="450,320">SRA3 (450x320 mm)</option>
-            <option value="500,700">50x70 cm</option>
-            <option value="700,1000">70x100 cm</option>
-            <option value="210,297">A4 (210x297 mm)</option>
-        </select>
+    <div class="section">
+        <span class="section-title">1. Foglio di Stampa (Macchina)</span>
+        <div class="grid">
+            <div>
+                <label>Formato Predefinito</label>
+                <select id="sheetSelect" onchange="toggleCustomSheet()">
+                    <option value="420,297">A3 (420x297 mm)</option>
+                    <option value="450,320">SRA3 (450x320 mm)</option>
+                    <option value="594,420">A2 (594x420 mm)</option>
+                    <option value="210,148">A5 (210x148 mm)</option>
+                    <option value="500,700">50x70 cm</option>
+                    <option value="700,1000">70x100 cm</option>
+                    <option value="custom">-- PERSONALIZZA --</option>
+                </select>
+            </div>
+            <div id="customSheetDims" class="grid hidden" style="grid-template-columns: 1fr 1fr; gap: 5px;">
+                <div>
+                    <label>L mm</label>
+                    <input type="number" id="customW" placeholder="L">
+                </div>
+                <div>
+                    <label>A mm</label>
+                    <input type="number" id="customH" placeholder="A">
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="group">
-        <label>Piano Segnature (es: 16, 16, 8, 4)</label>
-        <input type="text" id="sigInput" value="16" placeholder="Inserisci i fascicoli separati da virgola">
-        <small style="color:#888; font-size:0.7rem;">Definisci come dividere le pagine del PDF.</small>
+    <div class="section">
+        <span class="section-title">2. Formato Libro Finito (Chiuso)</span>
+        <div class="grid">
+            <div>
+                <label>Larghezza Libro (mm)</label>
+                <input type="number" id="bookW" value="210">
+            </div>
+            <div>
+                <label>Altezza Libro (mm)</label>
+                <input type="number" id="bookH" value="297">
+            </div>
+        </div>
     </div>
 
-    <div class="group">
-        <label>Distanza tra le pagine / Gutter (mm)</label>
-        <input type="number" id="gutterInput" value="0">
+    <div class="section">
+        <span class="section-title">3. Parametri Imposizione</span>
+        <div class="grid">
+            <div>
+                <label>Segnature (es: 16, 16, 8)</label>
+                <input type="text" id="sigInput" value="16">
+            </div>
+            <div>
+                <label>Gutter / Gronda (mm)</label>
+                <input type="number" id="gutterInput" value="0">
+            </div>
+        </div>
     </div>
 
     <div class="upload-zone" onclick="document.getElementById('pdfFile').click()">
         <input type="file" id="pdfFile" accept="application/pdf" style="display:none">
-        <span id="fileStatus">Clicca per caricare il PDF</span>
+        <span id="fileStatus">Trascina o carica il PDF originale</span>
     </div>
 
-    <button id="runBtn">GENERA PDF IMPOSTO</button>
-    <div id="log">Pronto all'uso.</div>
+    <button id="runBtn">Genera Segnature</button>
+    <div id="log">Pronto.</div>
 </div>
 
 <script>
     const pt = (mm) => (mm * 72) / 25.4;
+
+    function toggleCustomSheet() {
+        const val = document.getElementById('sheetSelect').value;
+        const customDiv = document.getElementById('customSheetDims');
+        if (val === 'custom') customDiv.classList.remove('hidden');
+        else customDiv.classList.add('hidden');
+    }
 
     const writeLog = (m) => {
         const l = document.getElementById('log');
@@ -62,7 +107,7 @@
     };
 
     document.getElementById('pdfFile').onchange = (e) => {
-        document.getElementById('fileStatus').innerText = e.target.files[0].name;
+        if (e.target.files[0]) document.getElementById('fileStatus').innerText = e.target.files[0].name;
     };
 
     document.getElementById('runBtn').onclick = async () => {
@@ -70,21 +115,30 @@
         if (!file) return alert("Seleziona un file!");
 
         try {
-            writeLog("Inizializzazione libreria...");
+            writeLog("Avvio elaborazione professionale...");
             const { PDFDocument } = PDFLib;
             const srcBytes = await file.arrayBuffer();
             const srcDoc = await PDFDocument.load(srcBytes);
             const outDoc = await PDFDocument.create();
 
-            const [sW_mm, sH_mm] = document.getElementById('sheetSelect').value.split(',').map(Number);
+            // Calcolo Foglio Macchina
+            let sW_mm, sH_mm;
+            if (document.getElementById('sheetSelect').value === 'custom') {
+                sW_mm = parseFloat(document.getElementById('customW').value);
+                sH_mm = parseFloat(document.getElementById('customH').value);
+            } else {
+                [sW_mm, sH_mm] = document.getElementById('sheetSelect').value.split(',').map(Number);
+            }
+            
             const sheetW = pt(sW_mm);
             const sheetH = pt(sH_mm);
             const gutter = pt(parseFloat(document.getElementById('gutterInput').value));
+            const bookW = pt(parseFloat(document.getElementById('bookW').value));
+            const bookH = pt(parseFloat(document.getElementById('bookH').value));
 
             const sigPlan = document.getElementById('sigInput').value.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
             
-            // EMBEDDING PREVENTIVO: Risolve l'errore NaN
-            writeLog("Pre-elaborazione vettoriale pagine...");
+            writeLog("Embedding vettoriale delle pagine...");
             const srcPages = srcDoc.getPages();
             const embeddedPages = await outDoc.embedPages(srcPages);
             
@@ -92,56 +146,46 @@
             const maxPages = embeddedPages.length;
 
             for (const sigSize of sigPlan) {
-                writeLog(`Elaborazione segnatura: ${sigSize} pagine`);
+                writeLog(`Generazione Segnatura: ${sigSize} pag.`);
                 
                 for (let i = 0; i < sigSize / 2; i++) {
                     const sheet = outDoc.addPage([sheetW, sheetH]);
                     
-                    let lIdx, rIdx;
-                    // Logica Saddle Stitch (Libretto) applicata alla singola segnatura
-                    if (i % 2 === 0) { // Fronte
-                        lIdx = (totalProcessed + sigSize) - 1 - i;
-                        rIdx = totalProcessed + i;
-                    } else { // Retro
-                        lIdx = totalProcessed + i;
-                        rIdx = (totalProcessed + sigSize) - 1 - i;
-                    }
+                    let lIdx = (i % 2 === 0) ? (totalProcessed + sigSize) - 1 - i : totalProcessed + i;
+                    let rIdx = (i % 2 === 0) ? totalProcessed + i : (totalProcessed + sigSize) - 1 - i;
 
-                    const drawPage = (idx, side) => {
-                        if (idx >= maxPages) return; // Salta se la segnatura eccede il PDF
-                        
+                    const drawSide = (idx, side) => {
+                        if (idx >= maxPages) return;
                         const p = embeddedPages[idx];
-                        // NO SCALING: Usiamo le dimensioni originali
-                        const pW = p.width;
-                        const pH = p.height;
-
+                        
+                        // NO SCALING: Usiamo le dimensioni originali del PDF (inclusi i crocini)
+                        // Ma le posizioniamo basandoci sul formato libro dichiarato
                         const x = (side === 'left') 
-                            ? (sheetW / 2 - pW) - (gutter / 2) 
-                            : (sheetW / 2) + (gutter / 2);
-                        const y = (sheetH - pH) / 2;
+                            ? (sheetW / 2) - (gutter / 2) - bookW + (bookW - p.width)/2
+                            : (sheetW / 2) + (gutter / 2) + (bookW - p.width)/2;
+                            
+                        const y = (sheetH - p.height) / 2;
 
-                        sheet.drawPage(p, { x, y, width: pW, height: pH });
+                        sheet.drawPage(p, { x, y, width: p.width, height: p.height });
                     };
 
-                    drawPage(lIdx, 'left');
-                    drawPage(rIdx, 'right');
+                    drawSide(lIdx, 'left');
+                    drawSide(rIdx, 'right');
                 }
                 totalProcessed += sigSize;
             }
 
-            writeLog("Finalizzazione PDF...");
             const pdfBytes = await outDoc.save();
             const blob = new Blob([pdfBytes], { type: 'application/pdf' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "imposizione_professionale.pdf";
+            a.download = `imposizione_libro_finito.pdf`;
             a.click();
-            writeLog("✅ FILE GENERATO CON SUCCESSO!");
+            writeLog("✅ DOCUMENTO GENERATO!");
 
         } catch (e) {
             writeLog(`❌ ERRORE: ${e.message}`);
-            console.error(e);
         }
     };
 </script>
