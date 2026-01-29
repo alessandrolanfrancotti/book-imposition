@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Book Imposer Pro V25 - Brossura Cucita</title>
+    <title>Book Imposer Pro V25 - Standard Clean</title>
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; display: flex; justify-content: center; padding: 20px; margin: 0; }
@@ -33,9 +33,9 @@
             <div>
                 <label>Formato Foglio Macchina</label>
                 <select id="sheetSelect" onchange="toggleCustomSheet(); checkFit();">
-                    <option value="700,1000">70x100 cm</option>
-                    <option value="500,700">50x70 cm</option>
                     <option value="450,320">SRA3 (450x320 mm)</option>
+                    <option value="500,700">50x70 cm</option>
+                    <option value="700,1000">70x100 cm</option>
                     <option value="420,297">A3 (420x297 mm)</option>
                     <option value="custom">-- PERSONALIZZA --</option>
                 </select>
@@ -43,9 +43,9 @@
             <div>
                 <label>Modalità Imposizione</label>
                 <select id="modeSelect" onchange="runAutoCalculate(); checkFit();">
-                    <option value="accavallato">Brossura cucita (Quartini)</option>
-                    <option value="16esimo_foglio">16esimo (4x2)</option>
-                    <option value="8avo_foglio">8avo (2x2)</option>
+                    <option value="accavallato" selected>Quartini accavallati (2-up)</option>
+                    <option value="16esimo_foglio">Solo 16esimi (4x2)</option>
+                    <option value="8avo_foglio">Solo 8avi (2x2)</option>
                 </select>
             </div>
         </div>
@@ -53,22 +53,22 @@
             <div><label>L mm</label><input type="number" id="customW" oninput="checkFit()"></div>
             <div><label>A mm</label><input type="number" id="customH" oninput="checkFit()"></div>
         </div>
-        <div id="monitor">> Carica un PDF per iniziare...</div>
+        <div id="monitor">> In attesa di PDF...</div>
     </div>
 
     <div class="section">
         <span class="section-title">2. Piano Segnature (Auto)</span>
-        <label>Sequenza (Modificabile)</label>
+        <label>Sequenza Pagine</label>
         <input type="text" id="sigInput" value="">
     </div>
 
     <div class="upload-zone" onclick="document.getElementById('pdfFile').click()">
         <input type="file" id="pdfFile" accept="application/pdf" style="display:none">
-        <span id="fileStatus">Trascina o clicca per caricare il PDF del libro</span>
+        <span id="fileStatus">Trascina o clicca per caricare il PDF del Libro</span>
     </div>
 
     <button id="runBtn">Genera Imposizione Professional</button>
-    <div id="log">Pronto.</div>
+    <div id="log">Pronto per il caricamento.</div>
 </div>
 
 <script>
@@ -98,7 +98,6 @@
         let cols = 2, rows = 1;
         if (mode === '16esimo_foglio') { cols = 4; rows = 2; }
         else if (mode === '8avo_foglio') { cols = 2; rows = 2; }
-        else if (mode === 'accavallato') { cols = 2; rows = 1; }
 
         let reqW = pW * cols;
         let reqH = pH * rows;
@@ -142,7 +141,10 @@
         if (mode === 'accavallato') {
             while (temp > 0) { plan.push(4); temp -= 4; }
         } else if (mode === '8avo_foglio') {
-            while (temp > 0) { plan.push(8); temp -= 8; }
+            while (temp > 0) {
+                if (temp >= 8) { plan.push(8); temp -= 8; }
+                else { plan.push(4); temp -= 4; }
+            }
         } else { // 16esimo
             while (temp > 0) {
                 if (temp >= 16) { plan.push(16); temp -= 16; }
@@ -151,7 +153,7 @@
             }
         }
         document.getElementById('sigInput').value = plan.join(', ');
-        writeLog(`Piano ricalcolato (${mode}): ${plan.join(', ')}`);
+        writeLog(`Piano ricalcolato: ${plan.join(', ')}`);
     }
 
     document.getElementById('runBtn').onclick = async () => {
@@ -178,12 +180,11 @@
             let cols, rows, schemaB, schemaV;
 
             if (subSize === 4) {
-                // Imposizione Quartino (2-up)
+                // Quartini (2-up)
                 for (let i = 0; i < 2; i++) {
                     const sheet = outDoc.addPage([sheetW, sheetH]);
-                    let lIdx = (i === 0) ? currentOffset + 3 : currentOffset + 1;
-                    let rIdx = (i === 0) ? currentOffset + 0 : currentOffset + 2;
-                    
+                    let lIdx = (i === 0) ? (currentOffset + 3) : (currentOffset + 1);
+                    let rIdx = (i === 0) ? (currentOffset + 0) : (currentOffset + 2);
                     const draw = (idx, side) => {
                         if (idx >= embeddedPages.length) return;
                         const p = embeddedPages[idx];
@@ -203,7 +204,7 @@
                     schemaV = [{i:1,r:180,c:0,row:1},{i:6,r:180,c:1,row:1},{i:0,r:0,c:0,row:0},{i:7,r:0,c:1,row:0}];
                 }
 
-                writeLog(`Imposizione ${subSize} pag...`);
+                writeLog(`Imposing ${subSize} pag...`);
                 const bianca = outDoc.addPage([sheetW, sheetH]);
                 const volta = outDoc.addPage([sheetW, sheetH]);
                 const drawGrid = (page, schema) => {
