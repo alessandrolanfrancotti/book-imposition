@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Book Imposer Pro V8</title>
+    <title>Book Imposer Pro V9 - Smart</title>
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; display: flex; justify-content: center; padding: 20px; margin: 0; }
@@ -15,7 +15,8 @@
         input, select { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #121212; color: #fff; box-sizing: border-box; }
         .upload-zone { border: 2px dashed #444; padding: 25px; text-align: center; margin: 20px 0; border-radius: 8px; cursor: pointer; transition: 0.3s; }
         .upload-zone:hover { border-color: #00d1b2; background: #1a1a1a; }
-        button { background: #00d1b2; color: #1a1a1a; border: none; padding: 18px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1rem; text-transform: uppercase; }
+        .btn-auto { background: #34495e; color: white; border: none; padding: 5px 10px; font-size: 0.7rem; border-radius: 4px; cursor: pointer; margin-top: 5px; }
+        button#runBtn { background: #00d1b2; color: #1a1a1a; border: none; padding: 18px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1rem; text-transform: uppercase; margin-top: 10px; }
         #log { margin-top: 15px; font-family: 'Courier New', monospace; font-size: 0.7rem; background: #000; color: #00ff00; padding: 12px; border-radius: 5px; height: 100px; overflow-y: auto; border: 1px solid #333; }
         .hidden { display: none; }
     </style>
@@ -23,7 +24,7 @@
 <body>
 
 <div class="panel">
-    <h1>📖 Book Imposer Pro V8</h1>
+    <h1>📖 Book Imposer Pro V9</h1>
     
     <div class="section">
         <span class="section-title">1. Foglio di Stampa (Macchina)</span>
@@ -40,15 +41,9 @@
                     <option value="custom">-- PERSONALIZZA --</option>
                 </select>
             </div>
-            <div id="customSheetDims" class="grid hidden" style="grid-template-columns: 1fr 1fr; gap: 5px;">
-                <div>
-                    <label>L mm</label>
-                    <input type="number" id="customW" placeholder="L">
-                </div>
-                <div>
-                    <label>A mm</label>
-                    <input type="number" id="customH" placeholder="A">
-                </div>
+            <div id="customSheetDims" class="grid hidden">
+                <div><label>L mm</label><input type="number" id="customW"></div>
+                <div><label>A mm</label><input type="number" id="customH"></div>
             </div>
         </div>
     </div>
@@ -56,14 +51,8 @@
     <div class="section">
         <span class="section-title">2. Formato Libro Finito (Chiuso)</span>
         <div class="grid">
-            <div>
-                <label>Larghezza Libro (mm)</label>
-                <input type="number" id="bookW" value="210">
-            </div>
-            <div>
-                <label>Altezza Libro (mm)</label>
-                <input type="number" id="bookH" value="297">
-            </div>
+            <div><label>Larghezza Libro (mm)</label><input type="number" id="bookW" value="150"></div>
+            <div><label>Altezza Libro (mm)</label><input type="number" id="bookH" value="210"></div>
         </div>
     </div>
 
@@ -73,6 +62,7 @@
             <div>
                 <label>Segnature (es: 16, 16, 8)</label>
                 <input type="text" id="sigInput" value="16">
+                <button class="btn-auto" onclick="autoCalculateSignatures()">✨ AUTO-CALCOLO</button>
             </div>
             <div>
                 <label>Gutter / Gronda (mm)</label>
@@ -83,21 +73,20 @@
 
     <div class="upload-zone" onclick="document.getElementById('pdfFile').click()">
         <input type="file" id="pdfFile" accept="application/pdf" style="display:none">
-        <span id="fileStatus">Trascina o carica il PDF originale</span>
+        <span id="fileStatus">Carica il PDF per iniziare</span>
     </div>
 
     <button id="runBtn">Genera Segnature</button>
-    <div id="log">Pronto.</div>
+    <div id="log">Seleziona un file per abilitare l'auto-calcolo.</div>
 </div>
 
 <script>
     const pt = (mm) => (mm * 72) / 25.4;
+    let loadedPdf = null;
 
     function toggleCustomSheet() {
         const val = document.getElementById('sheetSelect').value;
-        const customDiv = document.getElementById('customSheetDims');
-        if (val === 'custom') customDiv.classList.remove('hidden');
-        else customDiv.classList.add('hidden');
+        document.getElementById('customSheetDims').style.display = (val === 'custom') ? 'grid' : 'none';
     }
 
     const writeLog = (m) => {
@@ -106,22 +95,39 @@
         l.scrollTop = l.scrollHeight;
     };
 
-    document.getElementById('pdfFile').onchange = (e) => {
-        if (e.target.files[0]) document.getElementById('fileStatus').innerText = e.target.files[0].name;
+    document.getElementById('pdfFile').onchange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            document.getElementById('fileStatus').innerText = file.name;
+            const arrayBuffer = await file.arrayBuffer();
+            loadedPdf = await PDFLib.PDFDocument.load(arrayBuffer);
+            writeLog(`PDF caricato: ${loadedPdf.getPageCount()} pagine.`);
+        }
     };
 
+    function autoCalculateSignatures() {
+        if (!loadedPdf) return alert("Prima carica un file PDF!");
+        let pages = loadedPdf.getPageCount();
+        let plan = [];
+        
+        // Logica: priorità ai 16, poi 8, poi 4
+        while (pages >= 16) { plan.push(16); pages -= 16; }
+        if (pages >= 8) { plan.push(8); pages -= 8; }
+        if (pages >= 4) { plan.push(4); pages -= 4; }
+        if (pages > 0) { plan.push(4); writeLog("Nota: Aggiunte pagine bianche per chiudere l'ultimo quartino."); }
+        
+        document.getElementById('sigInput').value = plan.join(', ');
+        writeLog(`Piano calcolato: ${plan.join(', ')}`);
+    }
+
     document.getElementById('runBtn').onclick = async () => {
-        const file = document.getElementById('pdfFile').files[0];
-        if (!file) return alert("Seleziona un file!");
+        if (!loadedPdf) return alert("Seleziona un file!");
 
         try {
-            writeLog("Avvio elaborazione professionale...");
+            writeLog("Avvio imposizione...");
             const { PDFDocument } = PDFLib;
-            const srcBytes = await file.arrayBuffer();
-            const srcDoc = await PDFDocument.load(srcBytes);
             const outDoc = await PDFDocument.create();
 
-            // Calcolo Foglio Macchina
             let sW_mm, sH_mm;
             if (document.getElementById('sheetSelect').value === 'custom') {
                 sW_mm = parseFloat(document.getElementById('customW').value);
@@ -138,39 +144,33 @@
 
             const sigPlan = document.getElementById('sigInput').value.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
             
-            writeLog("Embedding vettoriale delle pagine...");
-            const srcPages = srcDoc.getPages();
-            const embeddedPages = await outDoc.embedPages(srcPages);
-            
+            // Embedding per evitare l'errore NaN e mantenere i vettori
+            const embeddedPages = await outDoc.embedPages(loadedPdf.getPages());
             let totalProcessed = 0;
-            const maxPages = embeddedPages.length;
 
             for (const sigSize of sigPlan) {
-                writeLog(`Generazione Segnatura: ${sigSize} pag.`);
-                
+                writeLog(`Generazione segnatura ${sigSize}...`);
                 for (let i = 0; i < sigSize / 2; i++) {
                     const sheet = outDoc.addPage([sheetW, sheetH]);
                     
                     let lIdx = (i % 2 === 0) ? (totalProcessed + sigSize) - 1 - i : totalProcessed + i;
                     let rIdx = (i % 2 === 0) ? totalProcessed + i : (totalProcessed + sigSize) - 1 - i;
 
-                    const drawSide = (idx, side) => {
-                        if (idx >= maxPages) return;
+                    const draw = (idx, side) => {
+                        if (idx >= embeddedPages.length) return; // Pagina bianca
                         const p = embeddedPages[idx];
                         
-                        // NO SCALING: Usiamo le dimensioni originali del PDF (inclusi i crocini)
-                        // Ma le posizioniamo basandoci sul formato libro dichiarato
+                        // Centratura 1:1 basata sul formato libro finito
                         const x = (side === 'left') 
                             ? (sheetW / 2) - (gutter / 2) - bookW + (bookW - p.width)/2
                             : (sheetW / 2) + (gutter / 2) + (bookW - p.width)/2;
-                            
                         const y = (sheetH - p.height) / 2;
 
                         sheet.drawPage(p, { x, y, width: p.width, height: p.height });
                     };
 
-                    drawSide(lIdx, 'left');
-                    drawSide(rIdx, 'right');
+                    draw(lIdx, 'left');
+                    draw(rIdx, 'right');
                 }
                 totalProcessed += sigSize;
             }
@@ -180,9 +180,9 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `imposizione_libro_finito.pdf`;
+            a.download = "imposizione_v9.pdf";
             a.click();
-            writeLog("✅ DOCUMENTO GENERATO!");
+            writeLog("✅ COMPLETATO!");
 
         } catch (e) {
             writeLog(`❌ ERRORE: ${e.message}`);
