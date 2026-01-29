@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Book Imposer Pro V27 - Accavallamento Reale</title>
+    <title>Book Imposer Pro V14 - Slim</title>
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; display: flex; justify-content: center; padding: 20px; margin: 0; }
@@ -15,62 +15,64 @@
         input, select { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #121212; color: #fff; box-sizing: border-box; }
         #monitor { margin-top: 10px; font-family: 'Courier New', monospace; font-size: 0.8rem; background: #000; color: #888; padding: 12px; border-radius: 5px; border: 1px solid #333; min-height: 20px; }
         .monitor-ok { color: #00ff00 !important; }
+        .monitor-error { color: #ff4757 !important; }
         .upload-zone { border: 2px dashed #444; padding: 25px; text-align: center; margin: 20px 0; border-radius: 8px; cursor: pointer; transition: 0.3s; }
         .upload-zone:hover { border-color: #00d1b2; background: #1a1a1a; }
+        .btn-auto { background: #34495e; color: white; border: none; padding: 5px 10px; font-size: 0.7rem; border-radius: 4px; cursor: pointer; margin-top: 5px; }
         button#runBtn { background: #00d1b2; color: #1a1a1a; border: none; padding: 18px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1rem; text-transform: uppercase; margin-top: 10px; }
-        #log { margin-top: 15px; font-family: 'Courier New', monospace; font-size: 0.7rem; background: #000; color: #00ff00; padding: 12px; border-radius: 5px; height: 100px; overflow-y: auto; border: 1px solid #333; }
+        #log { margin-top: 15px; font-family: 'Courier New', monospace; font-size: 0.7rem; background: #000; color: #00ff00; padding: 12px; border-radius: 5px; height: 80px; overflow-y: auto; border: 1px solid #333; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
 <div class="panel">
-    <h1>📖 Book Imposer Pro V27</h1>
+    <h1>📖 Book Imposer Pro V14</h1>
     
     <div class="section">
-        <span class="section-title">1. Foglio Macchina</span>
+        <span class="section-title">1. Foglio di Stampa (Macchina)</span>
         <div class="grid">
             <div>
-                <label>Formato</label>
+                <label>Formato Predefinito</label>
                 <select id="sheetSelect" onchange="toggleCustomSheet(); checkFit();">
-                    <option value="450,320">SRA3 (450x320 mm)</option>
                     <option value="420,297">A3 (420x297 mm)</option>
+                    <option value="450,320">SRA3 (450x320 mm)</option>
+                    <option value="594,420">A2 (594x420 mm)</option>
+                    <option value="210,148">A5 (210x148 mm)</option>
                     <option value="500,700">50x70 cm</option>
                     <option value="700,1000">70x100 cm</option>
                     <option value="custom">-- PERSONALIZZA --</option>
                 </select>
             </div>
-            <div id="customSheetDims" style="display:none" class="grid">
+            <div id="customSheetDims" class="grid hidden">
                 <div><label>L mm</label><input type="number" id="customW" oninput="checkFit()"></div>
                 <div><label>A mm</label><input type="number" id="customH" oninput="checkFit()"></div>
             </div>
         </div>
-        <div id="monitor">> In attesa di PDF...</div>
+        <div id="monitor">> In attesa di caricamento PDF...</div>
     </div>
 
     <div class="section">
-        <span class="section-title">2. Modalità Libro (Accavallamento)</span>
+        <span class="section-title">2. Parametri Imposizione</span>
         <div class="grid">
             <div>
-                <label>Base Segnature</label>
-                <select id="bookMode" onchange="runAutoCalculate();">
-                    <option value="4">Libro in Quartini</option>
-                    <option value="8">Libro in Ottavi (Accavallati)</option>
-                    <option value="16" selected>Libro in Sedicesimi (Accavallati)</option>
-                </select>
+                <label>Segnature (es: 16, 20)</label>
+                <input type="text" id="sigInput" value="16">
+                <button class="btn-auto" onclick="autoCalculateSignatures()">✨ AUTO-CALCOLO</button>
             </div>
             <div>
-                <label>Piano di Lavoro</label>
-                <input type="text" id="sigInput">
+                <label>Gutter / Gronda (mm)</label>
+                <input type="number" id="gutterInput" value="0" oninput="checkFit()">
             </div>
         </div>
     </div>
 
     <div class="upload-zone" onclick="document.getElementById('pdfFile').click()">
         <input type="file" id="pdfFile" accept="application/pdf" style="display:none">
-        <span id="fileStatus">Carica il PDF per l'imposizione</span>
+        <span id="fileStatus">Carica il PDF per iniziare</span>
     </div>
 
-    <button id="runBtn">Genera File per Stampa</button>
+    <button id="runBtn">Genera Segnature</button>
     <div id="log">Pronto.</div>
 </div>
 
@@ -86,22 +88,33 @@
 
     function checkFit() {
         const monitor = document.getElementById('monitor');
-        if (!loadedPdf) return;
+        if (!loadedPdf) {
+            monitor.innerText = "> In attesa di caricamento PDF...";
+            monitor.className = "";
+            return;
+        }
+
         let sW, sH;
         if (document.getElementById('sheetSelect').value === 'custom') {
             sW = parseFloat(document.getElementById('customW').value) || 0;
             sH = parseFloat(document.getElementById('customH').value) || 0;
-        } else { [sW, sH] = document.getElementById('sheetSelect').value.split(',').map(Number); }
+        } else {
+            [sW, sH] = document.getElementById('sheetSelect').value.split(',').map(Number);
+        }
 
         const firstPage = loadedPdf.getPages()[0];
-        const reqW = ptToMm(firstPage.getWidth()) * 2;
-        const reqH = ptToMm(firstPage.getHeight());
+        const pW_mm = ptToMm(firstPage.getWidth());
+        const pH_mm = ptToMm(firstPage.getHeight());
+        const g = parseFloat(document.getElementById('gutterInput').value) || 0;
 
-        if (sW >= reqW && sH >= reqH) {
-            monitor.innerHTML = `> OK | Ingombro: ${reqW.toFixed(0)}x${reqH.toFixed(0)} mm`;
+        const totalW = (pW_mm * 2) + g;
+        const totalH = pH_mm;
+
+        if (sW >= totalW && sH >= totalH) {
+            monitor.innerText = `> STATO: OK. File ${pW_mm.toFixed(0)}x${pH_mm.toFixed(0)} mm | Ingombro su foglio: ${totalW.toFixed(1)}x${totalH.toFixed(1)} mm.`;
             monitor.className = "monitor-ok";
         } else {
-            monitor.innerHTML = `> ERRORE | Richiesto: ${reqW.toFixed(0)}x${reqH.toFixed(0)} mm`;
+            monitor.innerText = `> ERRORE: Foglio troppo piccolo. Richiesto: ${totalW.toFixed(1)}x${totalH.toFixed(1)} mm.`;
             monitor.className = "monitor-error";
         }
     }
@@ -116,82 +129,66 @@
         const file = e.target.files[0];
         if (file) {
             document.getElementById('fileStatus').innerText = file.name;
-            loadedPdf = await PDFLib.PDFDocument.load(await file.arrayBuffer());
+            const arrayBuffer = await file.arrayBuffer();
+            loadedPdf = await PDFLib.PDFDocument.load(arrayBuffer);
             writeLog(`PDF caricato: ${loadedPdf.getPageCount()} pagine.`);
-            runAutoCalculate();
             checkFit();
         }
     };
 
-    function runAutoCalculate() {
-        if (!loadedPdf) return;
+    function autoCalculateSignatures() {
+        if (!loadedPdf) return alert("Prima carica un file PDF!");
         let total = loadedPdf.getPageCount();
-        const base = parseInt(document.getElementById('bookMode').value);
         if (total % 4 !== 0) total = Math.ceil(total / 4) * 4;
-        
-        let plan = [], temp = total;
-        while (temp > 0) {
-            if (temp >= base) { plan.push(base); temp -= base; }
-            else if (temp >= 8) { plan.push(8); temp -= 8; }
-            else { plan.push(4); temp -= 4; }
+        let plan = [], tempTotal = total;
+        while (tempTotal > 0) {
+            if (tempTotal >= 32) { plan.push(16); tempTotal -= 16; }
+            else if (tempTotal === 20) { plan.push(20); tempTotal = 0; }
+            else if (tempTotal === 24) { plan.push(8, 16); tempTotal = 0; }
+            else if (tempTotal === 28) { plan.push(12, 16); tempTotal = 0; }
+            else if (tempTotal === 16) { plan.push(16); tempTotal = 0; }
+            else { plan.push(tempTotal); tempTotal = 0; }
         }
         document.getElementById('sigInput').value = plan.join(', ');
-        writeLog(`Piano: ${plan.join(', ')}`);
+        writeLog(`Piano calcolato: ${plan.join(', ')}`);
     }
 
     document.getElementById('runBtn').onclick = async () => {
         if (!loadedPdf) return alert("Seleziona un file!");
-        writeLog("Calcolo accavallamento segnature...");
-        const { PDFDocument } = PDFLib;
-        const outDoc = await PDFDocument.create();
-        
-        let sW_mm, sH_mm;
-        if (document.getElementById('sheetSelect').value === 'custom') {
-            sW_mm = parseFloat(document.getElementById('customW').value);
-            sH_mm = parseFloat(document.getElementById('customH').value);
-        } else { [sW_mm, sH_mm] = document.getElementById('sheetSelect').value.split(',').map(Number); }
-        
-        const sheetW = pt(sW_mm), sheetH = pt(sH_mm);
-        const sigPlan = document.getElementById('sigInput').value.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
-        const embeddedPages = await outDoc.embedPages(loadedPdf.getPages());
-        
-        let totalProcessed = 0;
-
-        for (const sigSize of sigPlan) {
-            writeLog(`Elaborazione segnatura da ${sigSize}...`);
-            // Numero di fogli macchina (quartini) necessari per questa segnatura
-            const numSheets = sigSize / 4; 
-
-            for (let j = 0; j < numSheets; j++) {
-                // Ogni foglio ha Bianca (faccia A) e Volta (faccia B)
-                // Bianca
-                const bianca = outDoc.addPage([sheetW, sheetH]);
-                let bL = (totalProcessed + sigSize) - 1 - (j * 2);
-                let bR = totalProcessed + (j * 2);
-                
-                // Volta
-                const volta = outDoc.addPage([sheetW, sheetH]);
-                let vL = totalProcessed + (j * 2) + 1;
-                let vR = (totalProcessed + sigSize) - 2 - (j * 2);
-
-                const draw = (page, idx, side) => {
-                    if (idx >= embeddedPages.length) return;
-                    const p = embeddedPages[idx];
-                    const x = (side === 'left') ? (sheetW / 2) - p.width : (sheetW / 2);
-                    page.drawPage(p, { x, y: (sheetH - p.height) / 2 });
-                };
-
-                draw(bianca, bL, 'left');
-                draw(bianca, bR, 'right');
-                draw(volta, vL, 'left');
-                draw(volta, vR, 'right');
+        try {
+            writeLog("Elaborazione...");
+            const { PDFDocument } = PDFLib;
+            const outDoc = await PDFDocument.create();
+            let sW_mm, sH_mm;
+            if (document.getElementById('sheetSelect').value === 'custom') {
+                sW_mm = parseFloat(document.getElementById('customW').value);
+                sH_mm = parseFloat(document.getElementById('customH').value);
+            } else { [sW_mm, sH_mm] = document.getElementById('sheetSelect').value.split(',').map(Number); }
+            const sheetW = pt(sW_mm), sheetH = pt(sH_mm), gutter = pt(parseFloat(document.getElementById('gutterInput').value));
+            const sigPlan = document.getElementById('sigInput').value.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+            const embeddedPages = await outDoc.embedPages(loadedPdf.getPages());
+            let totalProcessed = 0;
+            for (const sigSize of sigPlan) {
+                for (let i = 0; i < sigSize / 2; i++) {
+                    const sheet = outDoc.addPage([sheetW, sheetH]);
+                    let lIdx = (i % 2 === 0) ? (totalProcessed + sigSize) - 1 - i : totalProcessed + i;
+                    let rIdx = (i % 2 === 0) ? totalProcessed + i : (totalProcessed + sigSize) - 1 - i;
+                    const draw = (idx, side) => {
+                        if (idx >= embeddedPages.length) return;
+                        const p = embeddedPages[idx];
+                        const x = (side === 'left') ? (sheetW / 2) - (gutter / 2) - p.width : (sheetW / 2) + (gutter / 2);
+                        const y = (sheetH - p.height) / 2;
+                        sheet.drawPage(p, { x, y, width: p.width, height: p.height });
+                    };
+                    draw(lIdx, 'left'); draw(rIdx, 'right');
+                }
+                totalProcessed += sigSize;
             }
-            totalProcessed += sigSize;
-        }
-
-        const pdfBytes = await outDoc.save();
-        window.open(URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' })));
-        writeLog("✅ FILE GENERATO!");
+            const pdfBytes = await outDoc.save();
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            window.open(URL.createObjectURL(blob));
+            writeLog("✅ COMPLETATO!");
+        } catch (e) { writeLog(`❌ ERRORE: ${e.message}`); }
     };
 </script>
 </body>
