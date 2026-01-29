@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Book Imposer Pro V15 - Multi-Mode</title>
+    <title>Book Imposer Pro V16</title>
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; display: flex; justify-content: center; padding: 20px; margin: 0; }
@@ -13,26 +13,26 @@
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         label { display: block; font-size: 0.75rem; color: #aaa; margin-bottom: 5px; }
         input, select { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #121212; color: #fff; box-sizing: border-box; }
-        #monitor { margin-top: 10px; font-family: 'Courier New', monospace; font-size: 0.8rem; background: #000; color: #888; padding: 12px; border-radius: 5px; border: 1px solid #333; }
+        #monitor { margin-top: 10px; font-family: 'Courier New', monospace; font-size: 0.8rem; background: #000; color: #888; padding: 12px; border-radius: 5px; border: 1px solid #333; min-height: 40px; }
         .monitor-ok { color: #00ff00 !important; }
         .monitor-error { color: #ff4757 !important; }
         .upload-zone { border: 2px dashed #444; padding: 25px; text-align: center; margin: 20px 0; border-radius: 8px; cursor: pointer; transition: 0.3s; }
         .upload-zone:hover { border-color: #00d1b2; background: #1a1a1a; }
+        .btn-auto { background: #34495e; color: white; border: none; padding: 5px 10px; font-size: 0.7rem; border-radius: 4px; cursor: pointer; margin-top: 5px; display: block; }
         button#runBtn { background: #00d1b2; color: #1a1a1a; border: none; padding: 18px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1rem; text-transform: uppercase; }
         #log { margin-top: 15px; font-family: 'Courier New', monospace; font-size: 0.7rem; background: #000; color: #00ff00; padding: 12px; border-radius: 5px; height: 100px; overflow-y: auto; border: 1px solid #333; }
-        .hidden { display: none; }
     </style>
 </head>
 <body>
 
 <div class="panel">
-    <h1>📖 Book Imposer Pro V15</h1>
+    <h1>📖 Book Imposer Pro V16</h1>
     
     <div class="section">
-        <span class="section-title">1. Configurazione Foglio Macchina</span>
+        <span class="section-title">1. Configurazione Stampa</span>
         <div class="grid">
             <div>
-                <label>Formato Foglio</label>
+                <label>Formato Foglio Macchina</label>
                 <select id="sheetSelect" onchange="toggleCustomSheet(); checkFit();">
                     <option value="700,1000">70x100 cm</option>
                     <option value="500,700">50x70 cm</option>
@@ -42,42 +42,41 @@
                 </select>
             </div>
             <div>
-                <label>Tipo di Imposizione</label>
+                <label>Modalità Imposizione</label>
                 <select id="modeSelect" onchange="checkFit()">
                     <option value="accavallato">Quartini accavallati (2-up)</option>
-                    <option value="16esimo_foglio">16esimo su intero foglio (4x2)</option>
-                    <option value="12esimo_foglio" disabled>12esimo su intero foglio (Coming Soon)</option>
-                    <option value="8avo_foglio" disabled>8avo su intero foglio (Coming Soon)</option>
+                    <option value="16esimo_foglio">16esimo su foglio intero (4x2)</option>
                 </select>
             </div>
         </div>
-        <div id="customSheetDims" class="grid hidden" style="margin-top:10px">
+        <div id="customSheetDims" class="grid" style="display:none; margin-top:10px">
             <div><label>L mm</label><input type="number" id="customW" oninput="checkFit()"></div>
             <div><label>A mm</label><input type="number" id="customH" oninput="checkFit()"></div>
         </div>
-        <div id="monitor">> In attesa di caricamento PDF...</div>
+        <div id="monitor">> In attesa di file...</div>
     </div>
 
-    <div class="section">
-        <span class="section-title">2. Parametri Extra</span>
+    <div class="section" id="paramsSection">
+        <span class="section-title">2. Parametri Imposizione</span>
         <div class="grid">
+            <div id="sigGroup">
+                <label>Segnature (es: 16, 20)</label>
+                <input type="text" id="sigInput" value="16">
+                <button class="btn-auto" onclick="autoCalculateSignatures()">✨ AUTO-CALCOLO</button>
+            </div>
             <div>
                 <label>Gutter / Gronda (mm)</label>
                 <input type="number" id="gutterInput" value="0" oninput="checkFit()">
-            </div>
-            <div id="sigSection">
-                <label>Segnature (solo per accavallato)</label>
-                <input type="text" id="sigInput" value="16">
             </div>
         </div>
     </div>
 
     <div class="upload-zone" onclick="document.getElementById('pdfFile').click()">
         <input type="file" id="pdfFile" accept="application/pdf" style="display:none">
-        <span id="fileStatus">Carica il PDF per iniziare</span>
+        <span id="fileStatus">Trascina o clicca per caricare il PDF</span>
     </div>
 
-    <button id="runBtn">Genera Imposizione Professional</button>
+    <button id="runBtn">Genera Imposizione</button>
     <div id="log">Pronto.</div>
 </div>
 
@@ -94,8 +93,11 @@
     function checkFit() {
         const monitor = document.getElementById('monitor');
         const mode = document.getElementById('modeSelect').value;
-        document.getElementById('sigSection').style.opacity = (mode === 'accavallato') ? "1" : "0.3";
+        const sigGroup = document.getElementById('sigGroup');
         
+        // Mostra/Nascondi segnature basato sulla modalità
+        sigGroup.style.visibility = (mode === 'accavallato') ? "visible" : "hidden";
+
         if (!loadedPdf) return;
 
         let sW, sH;
@@ -115,16 +117,16 @@
         if (mode === 'accavallato') {
             reqW = (pW * 2) + g;
             reqH = pH;
-        } else if (mode === '16esimo_foglio') {
+        } else {
             reqW = (pW * 4) + (g * 3);
             reqH = (pH * 2) + g;
         }
 
         if (sW >= reqW && sH >= reqH) {
-            monitor.innerText = `> STATO: OK. Ingombro richiesto: ${reqW.toFixed(1)}x${reqH.toFixed(1)} mm.`;
+            monitor.innerHTML = `> STATO: OK<br>> Richiesto: ${reqW.toFixed(1)}x${reqH.toFixed(1)} mm su ${sW}x${sH}`;
             monitor.className = "monitor-ok";
         } else {
-            monitor.innerText = `> ERRORE: Foglio troppo piccolo! Richiesto: ${reqW.toFixed(1)}x${reqH.toFixed(1)} mm.`;
+            monitor.innerHTML = `> ERRORE: FOGLIO PICCOLO<br>> Richiesto: ${reqW.toFixed(1)}x${reqH.toFixed(1)} mm`;
             monitor.className = "monitor-error";
         }
     }
@@ -145,8 +147,25 @@
         }
     };
 
+    function autoCalculateSignatures() {
+        if (!loadedPdf) return alert("Carica prima un PDF!");
+        let total = loadedPdf.getPageCount();
+        if (total % 4 !== 0) total = Math.ceil(total / 4) * 4;
+        let plan = [], temp = total;
+        while (temp > 0) {
+            if (temp >= 32) { plan.push(16); temp -= 16; }
+            else if (temp === 20) { plan.push(20); temp = 0; }
+            else if (temp === 24) { plan.push(8, 16); temp = 0; }
+            else if (temp === 28) { plan.push(12, 16); temp = 0; }
+            else if (temp === 16) { plan.push(16); temp = 0; }
+            else { plan.push(temp); temp = 0; }
+        }
+        document.getElementById('sigInput').value = plan.join(', ');
+        writeLog(`Piano editoriale: ${plan.join(', ')}`);
+    }
+
     document.getElementById('runBtn').onclick = async () => {
-        if (!loadedPdf) return alert("Seleziona un file!");
+        if (!loadedPdf) return alert("Manca il file!");
         const mode = document.getElementById('modeSelect').value;
         const { PDFDocument, degrees } = PDFLib;
         const outDoc = await PDFDocument.create();
@@ -162,7 +181,7 @@
         const embeddedPages = await outDoc.embedPages(loadedPdf.getPages());
 
         if (mode === 'accavallato') {
-            writeLog("Esecuzione Quartini Accavallati...");
+            writeLog("Esecuzione Accavallato...");
             const sigPlan = document.getElementById('sigInput').value.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
             let totalProcessed = 0;
             for (const sigSize of sigPlan) {
@@ -180,57 +199,18 @@
                 }
                 totalProcessed += sigSize;
             }
-        } 
-        else if (mode === '16esimo_foglio') {
-            writeLog("Esecuzione 16esimo professionale (4x2)...");
-            
+        } else {
+            writeLog("Esecuzione 16esimo Foglio Intero...");
             const nFogli = Math.ceil(embeddedPages.length / 16);
             for (let f = 0; f < nFogli; f++) {
                 const off = f * 16;
                 const bianca = outDoc.addPage([sheetW, sheetH]);
                 const volta = outDoc.addPage([sheetW, sheetH]);
 
-                // Schema Bianca: 4 sopra (ruotate), 4 sotto (dritte)
-                // Indici relativi al 16esimo: [5,12,9,8] sopra, [4,13,16,1] sotto
                 const schemaB = [
                     {i:off+4, r:180, c:0, row:1}, {i:off+11, r:180, c:1, row:1}, {i:off+8, r:180, c:2, row:1}, {i:off+7, r:180, c:3, row:1},
                     {i:off+3, r:0,   c:0, row:0}, {i:off+12, r:0,   c:1, row:0}, {i:off+15, r:0,   c:2, row:0}, {i:off+0, r:0,   c:3, row:0}
                 ];
-                // Schema Volta: [7,10,11,6] sopra, [2,15,14,3] sotto
                 const schemaV = [
                     {i:off+6, r:180, c:0, row:1}, {i:off+9,  r:180, c:1, row:1}, {i:off+10, r:180, c:2, row:1}, {i:off+5, r:180, c:3, row:1},
-                    {i:off+1, r:0,   c:0, row:0}, {i:off+14, r:0,   c:1, row:0}, {i:off+13, r:0,   c:2, row:0}, {i:off+2, r:0,   c:3, row:0}
-                ];
-
-                const drawGrid = (page, schema) => {
-                    schema.forEach(s => {
-                        if (s.i >= embeddedPages.length) return;
-                        const p = embeddedPages[s.i];
-                        // Calcolo posizione griglia centrata
-                        const gridW = (p.width * 4) + (gutter * 3);
-                        const gridH = (p.height * 2) + gutter;
-                        const startX = (sheetW - gridW) / 2;
-                        const startY = (sheetH - gridH) / 2;
-                        
-                        const x = startX + (s.c * (p.width + gutter));
-                        const y = startY + (s.row * (p.height + gutter));
-
-                        page.drawPage(p, { 
-                            x: s.r === 180 ? x + p.width : x, 
-                            y: s.r === 180 ? y + p.height : y, 
-                            rotate: degrees(s.r) 
-                        });
-                    });
-                };
-                drawGrid(bianca, schemaB);
-                drawGrid(volta, schemaV);
-            }
-        }
-
-        const pdfBytes = await outDoc.save();
-        window.open(URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' })));
-        writeLog("✅ COMPLETATO!");
-    };
-</script>
-</body>
-</html>
+                    {i:off+1, r:0,   c:0, row:0}, {i:off+14, r:0,   c:1, row:0}, {i:off+13, r:0,   c:2, row:0}, {i:off+2, r:0,   c:3, row:
