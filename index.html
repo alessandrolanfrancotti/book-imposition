@@ -213,4 +213,32 @@
                 ];
                 const schemaV = [
                     {i:off+6, r:180, c:0, row:1}, {i:off+9,  r:180, c:1, row:1}, {i:off+10, r:180, c:2, row:1}, {i:off+5, r:180, c:3, row:1},
-                    {i:off+1, r:0,   c:0, row:0}, {i:off+14, r:0,   c:1, row:0}, {i:off+13, r:0,   c:2, row:0}, {i:off+2, r:0,   c:3, row:
+                    {i:off+1, r:0,   c:0, row:0}, {i:off+14, r:0,   c:1, row:0}, {i:off+13, r:0,   c:2, row:0}, {i:off+2, r:0,   c:3, row:0}
+                ];
+
+                const drawGrid = (page, schema) => {
+                    schema.forEach(s => {
+                        if (s.i >= embeddedPages.length) return;
+                        const p = embeddedPages[s.i];
+                        const gridW = (p.width * 4) + (gutter * 3);
+                        const gridH = (p.height * 2) + gutter;
+                        const x = ((sheetW - gridW) / 2) + (s.c * (p.width + gutter));
+                        const y = ((sheetH - gridH) / 2) + (s.row * (p.height + gutter));
+
+                        page.drawPage(p, { 
+                            x: s.r === 180 ? x + p.width : x, 
+                            y: s.r === 180 ? y + p.height : y, 
+                            rotate: degrees(s.r) 
+                        });
+                    });
+                };
+                drawGrid(bianca, schemaB); drawGrid(volta, schemaV);
+            }
+        }
+        const pdfBytes = await outDoc.save();
+        window.open(URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' })));
+        writeLog("✅ COMPLETATO!");
+    };
+</script>
+</body>
+</html>
