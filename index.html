@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Book Imposer Pro V22 - Auto-Calcolo</title>
+    <title>Book Imposer Pro V23 - Adaptive Industrial</title>
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; display: flex; justify-content: center; padding: 20px; margin: 0; }
@@ -25,7 +25,7 @@
 <body>
 
 <div class="panel">
-    <h1>📖 Book Imposer Pro V22</h1>
+    <h1>📖 Book Imposer Pro V23</h1>
     
     <div class="section">
         <span class="section-title">1. Configurazione Stampa</span>
@@ -41,8 +41,8 @@
                 </select>
             </div>
             <div>
-                <label>Modalità Imposizione (Standard)</label>
-                <select id="modeSelect" onchange="checkFit()">
+                <label>Modalità Imposizione</label>
+                <select id="modeSelect" onchange="runAutoCalculate(); checkFit();">
                     <option value="16esimo_foglio">16esimo su foglio (4x2)</option>
                     <option value="12esimo_foglio">12esimo su foglio (2x3 Verticale)</option>
                     <option value="8avo_foglio">8avo su foglio (2x2)</option>
@@ -58,7 +58,7 @@
     </div>
 
     <div class="section">
-        <span class="section-title">2. Piano Segnature (Auto-Generato)</span>
+        <span class="section-title">2. Piano Segnature (Auto-Adattivo)</span>
         <label>Sequenza (Modificabile manualmente)</label>
         <input type="text" id="sigInput" value="">
     </div>
@@ -69,7 +69,7 @@
     </div>
 
     <button id="runBtn">Genera Imposizione Professional</button>
-    <div id="log">In attesa del file PDF.</div>
+    <div id="log">Pronto.</div>
 </div>
 
 <script>
@@ -126,32 +126,47 @@
             const buffer = await file.arrayBuffer();
             loadedPdf = await PDFLib.PDFDocument.load(buffer);
             writeLog(`PDF caricato: ${loadedPdf.getPageCount()} pagine.`);
-            
-            // Auto-calcolo immediato al caricamento
             runAutoCalculate();
             checkFit();
         }
     };
 
     function runAutoCalculate() {
+        if (!loadedPdf) return;
         let total = loadedPdf.getPageCount();
+        const mode = document.getElementById('modeSelect').value;
+        
         if (total % 4 !== 0) {
             total = Math.ceil(total / 4) * 4;
-            writeLog(`Pagine non multiple di 4. Arrotondato a ${total} per la legatoria.`);
+            writeLog(`Pagine non multiple di 4. Arrotondato a ${total}.`);
         }
+        
         let plan = [];
         let temp = total;
 
-        while (temp > 0) {
-            if (temp >= 32) { plan.push(16); temp -= 16; }
-            else if (temp === 28) { plan.push(12, 16); temp = 0; }
-            else if (temp === 24) { plan.push(8, 16); temp = 0; }
-            else if (temp === 20) { plan.push(20); temp = 0; }
-            else if (temp === 16) { plan.push(16); temp = 0; }
-            else { plan.push(temp); temp = 0; }
+        if (mode === '12esimo_foglio') {
+            while (temp > 0) {
+                if (temp >= 12) { plan.push(12); temp -= 12; }
+                else if (temp >= 8) { plan.push(8); temp -= 8; }
+                else { plan.push(temp); temp = 0; }
+            }
+        } else if (mode === '8avo_foglio') {
+            while (temp > 0) {
+                if (temp >= 8) { plan.push(8); temp -= 8; }
+                else { plan.push(temp); temp = 0; }
+            }
+        } else {
+            while (temp > 0) {
+                if (temp >= 32) { plan.push(16); temp -= 16; }
+                else if (temp === 28) { plan.push(12, 16); temp = 0; }
+                else if (temp === 24) { plan.push(8, 16); temp = 0; }
+                else if (temp === 20) { plan.push(20); temp = 0; }
+                else if (temp === 16) { plan.push(16); temp = 0; }
+                else { plan.push(temp); temp = 0; }
+            }
         }
         document.getElementById('sigInput').value = plan.join(', ');
-        writeLog(`Piano editoriale auto-generato: ${plan.join(', ')}`);
+        writeLog(`Piano ricalcolato (${mode}): ${plan.join(', ')}`);
     }
 
     document.getElementById('runBtn').onclick = async () => {
@@ -208,7 +223,7 @@
                         schemaV = [{i:1,r:180,c:0,row:1},{i:6,r:180,c:1,row:1},{i:0,r:0,c:0,row:0},{i:7,r:0,c:1,row:0}];
                     }
 
-                    writeLog(`Imposition ${subSize} pag in griglia ${cols}x${rows}...`);
+                    writeLog(`Imposing ${subSize} pag (${cols}x${rows})...`);
                     const bianca = outDoc.addPage([sheetW, sheetH]);
                     const volta = outDoc.addPage([sheetW, sheetH]);
                     const drawGrid = (page, schema) => {
@@ -231,7 +246,7 @@
         }
         const pdfBytes = await outDoc.save();
         window.open(URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' })));
-        writeLog("✅ COMPLETATO!");
+        writeLog("✅ PDF GENERATO!");
     };
 </script>
 </body>
