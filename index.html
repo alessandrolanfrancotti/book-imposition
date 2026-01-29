@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>💎 BOOK IMPOSER PRO V14 - LUXURY EDITION 💎</title>
+    <title>🧊 Lil Imposer - Platinum Edition 🧊</title>
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
     <style>
         body { 
             font-family: 'Impact', 'Arial Black', sans-serif; 
-            background: radial-gradient(circle, #1a1a1a 0%, #000 100%), url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
-            color: #fff; 
+            background: radial-gradient(circle, #2c2c2c 0%, #000 100%), url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            color: #ccc; 
             display: flex; 
             justify-content: center; 
             padding: 20px; 
@@ -16,179 +16,188 @@
             overflow-x: hidden;
         }
 
+        /* Chrome/Steel Panel */
         .panel { 
-            background: linear-gradient(145deg, #222, #000);
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
             padding: 30px; 
             border-radius: 0px; 
             width: 100%; 
             max-width: 700px; 
-            border: 5px solid #ffd700;
-            box-shadow: 0 0 50px rgba(255, 215, 0, 0.3), inset 0 0 20px #ffd700;
+            border: 4px solid #888;
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.1), inset 0 0 20px #444;
             position: relative;
         }
 
+        /* Lil Imposer Platinum Title */
         h1 { 
-            background: linear-gradient(to bottom, #fff 20%, #ffd700 40%, #ff8c00 70%, #fff 90%);
+            background: linear-gradient(to bottom, #fff 0%, #888 45%, #fff 50%, #444 55%, #aaa 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-align: center; 
             margin-bottom: 30px; 
-            font-size: 3rem; 
+            font-size: 4rem; 
             text-transform: uppercase;
-            filter: drop-shadow(4px 4px 0px #000);
-            letter-spacing: -2px;
+            filter: drop-shadow(4px 4px 0px #000) drop-shadow(0 0 10px rgba(255,255,255,0.5));
+            letter-spacing: -3px;
             font-style: italic;
         }
 
         .section { 
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.03);
             padding: 20px; 
-            border: 2px solid #444;
+            border: 1px solid #333;
             margin-bottom: 20px; 
             position: relative;
-            box-shadow: 5px 5px 0px #ffd700;
+            box-shadow: 5px 5px 0px #555;
         }
 
         .section-title { 
-            font-size: 1rem; 
-            color: #00ffcc; 
+            font-size: 0.9rem; 
+            color: #fff; 
             margin-bottom: 15px; 
             display: block; 
             text-transform: uppercase;
-            text-shadow: 2px 2px #000;
+            text-shadow: 0 0 8px rgba(255,255,255,0.6);
+            letter-spacing: 2px;
         }
 
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
-        label { display: block; font-size: 0.9rem; color: #ffd700; margin-bottom: 5px; text-transform: uppercase; }
+        label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 5px; text-transform: uppercase; }
 
         input, select { 
             width: 100%; 
             padding: 12px; 
-            border: 2px solid #ffd700; 
+            border: 2px solid #666; 
             background: #000; 
             color: #fff; 
             font-weight: bold;
             box-sizing: border-box;
             border-radius: 0;
-            font-family: sans-serif;
+            outline: none;
+            transition: 0.3s;
         }
+        input:focus, select:focus { border-color: #fff; box-shadow: 0 0 10px #fff; }
 
         #monitor { 
             margin-top: 15px; 
             font-family: 'Courier New', monospace; 
-            font-size: 0.9rem; 
+            font-size: 0.85rem; 
             background: #000; 
-            color: #00ff00; 
+            color: #aaa; 
             padding: 15px; 
-            border: 1px solid #00ffcc;
-            text-shadow: 0 0 5px #00ff00;
+            border: 1px solid #444;
         }
 
-        .monitor-ok { border-color: #00ff00 !important; color: #00ff00 !important; box-shadow: 0 0 15px #00ff00; }
-        .monitor-error { border-color: #ff0000 !important; color: #ff0000 !important; box-shadow: 0 0 15px #ff0000; }
+        .monitor-ok { color: #fff !important; border-color: #fff !important; text-shadow: 0 0 10px #fff; }
+        .monitor-error { color: #ff0000 !important; border-color: #ff0000 !important; }
 
+        /* Ice Upload Zone */
         .upload-zone { 
-            border: 4px dashed #00ffcc; 
+            border: 3px solid #666; 
             padding: 40px; 
             text-align: center; 
             margin: 20px 0; 
-            background: rgba(0, 255, 204, 0.1);
+            background: linear-gradient(45deg, #000, #111);
             cursor: pointer; 
-            transition: all 0.2s;
+            transition: all 0.3s;
             font-size: 1.2rem;
-            text-transform: uppercase;
             color: #fff;
-            text-shadow: 2px 2px #000;
+            text-transform: uppercase;
             position: relative;
-            z-index: 10; /* Assicura che sia sopra tutto */
+            z-index: 10;
         }
         .upload-zone:hover { 
-            background: rgba(255, 215, 0, 0.2);
-            border-color: #ffd700;
-            transform: scale(1.02);
+            border-color: #fff;
+            background: #1a1a1a;
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
         }
 
+        /* Platinum Button */
         button#runBtn { 
-            background: linear-gradient(to bottom, #ffd700, #ff8c00);
+            background: linear-gradient(to bottom, #fff, #999, #444);
             color: #000; 
-            border: 3px solid #fff; 
+            border: 2px solid #fff; 
             padding: 25px; 
             width: 100%; 
             font-weight: 900; 
             cursor: pointer; 
-            font-size: 1.5rem; 
+            font-size: 1.6rem; 
             text-transform: uppercase; 
             margin-top: 10px;
-            box-shadow: 0 10px 0px #8b4513;
+            box-shadow: 0 8px 0px #333;
+            transition: 0.1s;
         }
+        button#runBtn:active { transform: translateY(4px); box-shadow: 0 4px 0px #333; }
 
         #log { 
             margin-top: 20px; 
             font-family: 'Courier New', monospace; 
-            font-size: 0.8rem; 
-            background: #111; 
-            color: #00ff00; 
+            font-size: 0.75rem; 
+            background: #000; 
+            color: #888; 
             padding: 15px; 
-            height: 100px; 
+            height: 90px; 
             overflow-y: auto; 
-            border: 1px solid #333;
+            border: 1px solid #222;
         }
 
         .hidden { display: none !important; }
 
-        /* FIX DECORAZIONI: pointer-events none per non bloccare i click */
-        .decor { position: absolute; pointer-events: none; z-index: 5; }
-        .diamond { top: -10px; right: -10px; font-size: 2.5rem; }
-        .money { bottom: -10px; left: -10px; font-size: 2.5rem; }
+        /* Bling Decorations */
+        .decor { position: absolute; pointer-events: none; z-index: 5; filter: drop-shadow(0 0 5px #fff); }
+        .bling1 { top: -15px; right: -15px; font-size: 3rem; }
+        .bling2 { bottom: -15px; left: -15px; font-size: 3rem; }
+        .bling3 { top: 50%; left: -25px; font-size: 2rem; opacity: 0.5; }
 
     </style>
 </head>
 <body>
 
 <div class="panel">
-    <span class="decor diamond">💎</span>
-    <span class="decor money">💰</span>
+    <span class="decor bling1">✨</span>
+    <span class="decor bling2">⛓️</span>
+    <span class="decor bling3">💎</span>
     
-    <h1>💰 IMPOSER PRO V14 💰</h1>
+    <h1>LIL IMPOSER</h1>
     
     <div class="section">
-        <span class="section-title">✨ CONFIGURAZIONE MACCHINA ✨</span>
+        <span class="section-title">💿 WHIP SETTINGS (PAPER) 💿</span>
         <div class="grid">
             <div>
-                <label>FORMATO FOGLIO</label>
+                <label>CHOOSE YO SHEET</label>
                 <select id="sheetSelect" onchange="toggleCustomSheet(); checkFit();">
-                    <option value="420,297">A3 (420x297 mm)</option>
-                    <option value="450,320">SRA3 (450x320 mm)</option>
-                    <option value="594,420">A2 (594x420 mm)</option>
-                    <option value="210,148">A5 (210x148 mm)</option>
-                    <option value="500,700">50x70 cm</option>
-                    <option value="700,1000">70x100 cm</option>
-                    <option value="custom">-- PERSONALIZZA --</option>
+                    <option value="420,297">A3 (Standard Flex)</option>
+                    <option value="450,320">SRA3 (Big Boy)</option>
+                    <option value="594,420">A2 (Giant Steez)</option>
+                    <option value="210,148">A5 (Pocket Heat)</option>
+                    <option value="500,700">50x70 (OG Size)</option>
+                    <option value="700,1000">70x100 (Final Boss)</option>
+                    <option value="custom">-- CUSTOM DRIP --</option>
                 </select>
             </div>
             <div id="customSheetDims" class="grid hidden">
-                <div><label>L mm</label><input type="number" id="customW" oninput="checkFit()"></div>
-                <div><label>A mm</label><input type="number" id="customH" oninput="checkFit()"></div>
+                <div><label>WIDTH mm</label><input type="number" id="customW" oninput="checkFit()"></div>
+                <div><label>HEIGHT mm</label><input type="number" id="customH" oninput="checkFit()"></div>
             </div>
         </div>
-        <div id="monitor">> IN ATTESA DEL PDF...</div>
+        <div id="monitor">> WAITIN' FOR DAT PDF...</div>
     </div>
 
     <div class="section">
-        <span class="section-title">📏 PIANO DELLE SEGNATURE 📏</span>
-        <label>ORDINE DI STAMPA</label>
-        <input type="text" id="sigInput" placeholder="IL CALCOLO APPARIRÀ QUI">
+        <span class="section-title">📊 SIGNATURE FLOW 📊</span>
+        <label>DA SEQUENCE</label>
+        <input type="text" id="sigInput" placeholder="LETTIN' THE SYSTEM COOK...">
     </div>
 
     <div class="upload-zone" id="dropZone" onclick="document.getElementById('pdfFile').click()">
         <input type="file" id="pdfFile" accept="application/pdf" style="display:none">
-        <span id="fileStatus">🧊 TRASCINA IL FILE O CLICCA 🧊</span>
+        <span id="fileStatus">❄️ DROP YO FILE OR TAP ❄️</span>
     </div>
 
-    <button id="runBtn">💎 GENERA SEGNATURE ORA 💎</button>
+    <button id="runBtn">✨ MAKE IT BLING ✨</button>
     
-    <div id="log">SISTEMA PRONTO PER IL BUSINESS.</div>
+    <div id="log">SYSTEM READY TO STACK.</div>
 </div>
 
 <script>
@@ -199,36 +208,27 @@
     function toggleCustomSheet() {
         const val = document.getElementById('sheetSelect').value;
         const customDiv = document.getElementById('customSheetDims');
-        if (val === 'custom') {
-            customDiv.classList.remove('hidden');
-        } else {
-            customDiv.classList.add('hidden');
-        }
+        if (val === 'custom') customDiv.classList.remove('hidden');
+        else customDiv.classList.add('hidden');
     }
 
     function checkFit() {
         const monitor = document.getElementById('monitor');
         if (!loadedPdf) return;
-
         let sW, sH;
         if (document.getElementById('sheetSelect').value === 'custom') {
             sW = parseFloat(document.getElementById('customW').value) || 0;
             sH = parseFloat(document.getElementById('customH').value) || 0;
-        } else {
-            [sW, sH] = document.getElementById('sheetSelect').value.split(',').map(Number);
-        }
-
+        } else { [sW, sH] = document.getElementById('sheetSelect').value.split(',').map(Number); }
         const firstPage = loadedPdf.getPages()[0];
         const pW_mm = ptToMm(firstPage.getWidth());
         const pH_mm = ptToMm(firstPage.getHeight());
         const totalW = (pW_mm * 2);
-        const totalH = pH_mm;
-
-        if (sW >= totalW && sH >= totalH) {
-            monitor.innerText = `> STATO: OK! ${pW_mm.toFixed(0)}x${pH_mm.toFixed(0)}mm ENTRA IN ${sW}x${sH}mm`;
+        if (sW >= totalW && sH >= pH_mm) {
+            monitor.innerText = `> STATUS: WE GOOD. ${pW_mm.toFixed(0)}x${pH_mm.toFixed(0)}mm FITS ON DA SHEET.`;
             monitor.className = "monitor-ok";
         } else {
-            monitor.innerText = `> ERRORE: FOGLIO TROPPO PICCOLO!`;
+            monitor.innerText = `> ERR: SHEET TOO SMALL, DAWG!`;
             monitor.className = "monitor-error";
         }
     }
@@ -242,10 +242,10 @@
     document.getElementById('pdfFile').onchange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            document.getElementById('fileStatus').innerText = "✅ " + file.name.toUpperCase();
+            document.getElementById('fileStatus').innerText = "💿 " + file.name.toUpperCase();
             const arrayBuffer = await file.arrayBuffer();
             loadedPdf = await PDFLib.PDFDocument.load(arrayBuffer);
-            writeLog(`PDF CARICATO: ${loadedPdf.getPageCount()} PAGINE.`);
+            writeLog(`LOADED ${loadedPdf.getPageCount()} TRACKS (PAGES).`);
             autoCalculateSignatures();
             checkFit();
         }
@@ -265,13 +265,13 @@
             else { plan.push(tempTotal); tempTotal = 0; }
         }
         document.getElementById('sigInput').value = plan.join(', ');
-        writeLog(`PIANO CALCOLATO: ${plan.join(', ')}`);
+        writeLog(`FLOW CALCULATED: ${plan.join(', ')}`);
     }
 
     document.getElementById('runBtn').onclick = async () => {
-        if (!loadedPdf) return alert("CARICA UN FILE, BOSS!");
+        if (!loadedPdf) return alert("LOAD THE TRACK FIRST, HOMIE!");
         try {
-            writeLog("ELABORAZIONE LUXURY IN CORSO...");
+            writeLog("COOKIN' PLATINUM PDF...");
             const { PDFDocument } = PDFLib;
             const outDoc = await PDFDocument.create();
             let sW_mm, sH_mm;
@@ -301,10 +301,9 @@
             }
             const pdfBytes = await outDoc.save();
             const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob);
-            window.open(url);
-            writeLog("💰 SOLDI FATTI! PDF GENERATO.");
-        } catch (e) { writeLog(`❌ DISASTRO: ${e.message}`); }
+            window.open(URL.createObjectURL(blob));
+            writeLog("🧊 ICE ON YO WRIST! PDF IS READY.");
+        } catch (e) { writeLog(`❌ FUMBLED: ${e.message}`); }
     };
 </script>
 </body>
