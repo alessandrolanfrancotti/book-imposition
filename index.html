@@ -198,14 +198,27 @@
         <div class="col-50">
           <label>SIZES</label>
           <select id="sheetSelect">
-            <option value="210,297">A4</option>
-            <option value="420,297">A3</option>
-            <option value="450,320">SRA3</option>
-            <option value="594,420">A2</option>
-            <option value="500,700">50x70</option>
-            <option value="700,1000">70x100</option>
+            <option value="210,297">A4 (Vertical)</option>
+            <option value="297,210">A4 (Horizontal)</option>
+
+            <option value="420,297">A3 (Horizontal)</option>
+            <option value="297,420">A3 (Vertical)</option>
+
+            <option value="450,320">SRA3 (Horizontal)</option>
+            <option value="320,450">SRA3 (Vertical)</option>
+
+            <option value="594,420">A2 (Horizontal)</option>
+            <option value="420,594">A2 (Vertical)</option>
+
+            <option value="500,700">50x70 (Vertical)</option>
+            <option value="700,500">50x70 (Horizontal)</option>
+
+            <option value="700,1000">70x100 (Vertical)</option>
+            <option value="1000,700">70x100 (Horizontal)</option>
+
             <option value="custom">CUSTOM</option>
           </select>
+
         </div>
 
         <div class="col-25" id="customWCol">
