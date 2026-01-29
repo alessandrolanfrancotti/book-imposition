@@ -16,19 +16,17 @@
             overflow-x: hidden;
         }
 
-        /* Il Pannello stile "Copertina CD" */
         .panel { 
             background: linear-gradient(145deg, #222, #000);
             padding: 30px; 
             border-radius: 0px; 
             width: 100%; 
             max-width: 700px; 
-            border: 5px solid #ffd700; /* Bordo Oro */
+            border: 5px solid #ffd700;
             box-shadow: 0 0 50px rgba(255, 215, 0, 0.3), inset 0 0 20px #ffd700;
             position: relative;
         }
 
-        /* Titolo Pen & Pixel Style */
         h1 { 
             background: linear-gradient(to bottom, #fff 20%, #ffd700 40%, #ff8c00 70%, #fff 90%);
             -webkit-background-clip: text;
@@ -53,7 +51,6 @@
 
         .section-title { 
             font-size: 1rem; 
-            font-weight: bold; 
             color: #00ffcc; 
             margin-bottom: 15px; 
             display: block; 
@@ -74,9 +71,9 @@
             font-weight: bold;
             box-sizing: border-box;
             border-radius: 0;
+            font-family: sans-serif;
         }
 
-        /* Monitor di stato */
         #monitor { 
             margin-top: 15px; 
             font-family: 'Courier New', monospace; 
@@ -91,7 +88,6 @@
         .monitor-ok { border-color: #00ff00 !important; color: #00ff00 !important; box-shadow: 0 0 15px #00ff00; }
         .monitor-error { border-color: #ff0000 !important; color: #ff0000 !important; box-shadow: 0 0 15px #ff0000; }
 
-        /* Area di Upload */
         .upload-zone { 
             border: 4px dashed #00ffcc; 
             padding: 40px; 
@@ -104,6 +100,8 @@
             text-transform: uppercase;
             color: #fff;
             text-shadow: 2px 2px #000;
+            position: relative;
+            z-index: 10; /* Assicura che sia sopra tutto */
         }
         .upload-zone:hover { 
             background: rgba(255, 215, 0, 0.2);
@@ -111,7 +109,6 @@
             transform: scale(1.02);
         }
 
-        /* Bottone Esagerato */
         button#runBtn { 
             background: linear-gradient(to bottom, #ffd700, #ff8c00);
             color: #000; 
@@ -124,9 +121,7 @@
             text-transform: uppercase; 
             margin-top: 10px;
             box-shadow: 0 10px 0px #8b4513;
-            transition: 0.1s;
         }
-        button#runBtn:active { transform: translateY(5px); box-shadow: 0 5px 0px #8b4513; }
 
         #log { 
             margin-top: 20px; 
@@ -140,19 +135,20 @@
             border: 1px solid #333;
         }
 
-        .hidden { display: none; }
+        .hidden { display: none !important; }
 
-        /* Decorazioni extra */
-        .diamond { position: absolute; top: -10px; right: -10px; font-size: 2rem; }
-        .money { position: absolute; bottom: -10px; left: -10px; font-size: 2rem; }
+        /* FIX DECORAZIONI: pointer-events none per non bloccare i click */
+        .decor { position: absolute; pointer-events: none; z-index: 5; }
+        .diamond { top: -10px; right: -10px; font-size: 2.5rem; }
+        .money { bottom: -10px; left: -10px; font-size: 2.5rem; }
 
     </style>
 </head>
 <body>
 
 <div class="panel">
-    <span class="diamond">💎</span>
-    <span class="money">💰</span>
+    <span class="decor diamond">💎</span>
+    <span class="decor money">💰</span>
     
     <h1>💰 IMPOSER PRO V14 💰</h1>
     
@@ -182,10 +178,10 @@
     <div class="section">
         <span class="section-title">📏 PIANO DELLE SEGNATURE 📏</span>
         <label>ORDINE DI STAMPA</label>
-        <input type="text" id="sigInput" placeholder="CALCOLO IN CORSO...">
+        <input type="text" id="sigInput" placeholder="IL CALCOLO APPARIRÀ QUI">
     </div>
 
-    <div class="upload-zone" onclick="document.getElementById('pdfFile').click()">
+    <div class="upload-zone" id="dropZone" onclick="document.getElementById('pdfFile').click()">
         <input type="file" id="pdfFile" accept="application/pdf" style="display:none">
         <span id="fileStatus">🧊 TRASCINA IL FILE O CLICCA 🧊</span>
     </div>
@@ -196,14 +192,18 @@
 </div>
 
 <script>
-    /* ... (Il codice JavaScript rimane identico a quello precedente per non rompere il funzionamento) ... */
     const pt = (mm) => (mm * 72) / 25.4;
     const ptToMm = (p) => (p * 25.4) / 72;
     let loadedPdf = null;
 
     function toggleCustomSheet() {
         const val = document.getElementById('sheetSelect').value;
-        document.getElementById('customSheetDims').style.display = (val === 'custom') ? 'grid' : 'none';
+        const customDiv = document.getElementById('customSheetDims');
+        if (val === 'custom') {
+            customDiv.classList.remove('hidden');
+        } else {
+            customDiv.classList.add('hidden');
+        }
     }
 
     function checkFit() {
@@ -225,7 +225,7 @@
         const totalH = pH_mm;
 
         if (sW >= totalW && sH >= totalH) {
-            monitor.innerText = `> STATO: OK! ${pW_mm.toFixed(0)}x${pH_mm.toFixed(0)}mm fits on ${sW}x${sH}mm`;
+            monitor.innerText = `> STATO: OK! ${pW_mm.toFixed(0)}x${pH_mm.toFixed(0)}mm ENTRA IN ${sW}x${sH}mm`;
             monitor.className = "monitor-ok";
         } else {
             monitor.innerText = `> ERRORE: FOGLIO TROPPO PICCOLO!`;
@@ -301,5 +301,11 @@
             }
             const pdfBytes = await outDoc.save();
             const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-            window.open(URL.createObjectURL(blob));
-            writeLog("💰 SOLDI FATTI! PDF GENER
+            const url = URL.createObjectURL(blob);
+            window.open(url);
+            writeLog("💰 SOLDI FATTI! PDF GENERATO.");
+        } catch (e) { writeLog(`❌ DISASTRO: ${e.message}`); }
+    };
+</script>
+</body>
+</html>
