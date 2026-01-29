@@ -94,26 +94,22 @@
         const monitor = document.getElementById('monitor');
         const mode = document.getElementById('modeSelect').value;
         if (!loadedPdf) return;
-
         let sW, sH;
         if (document.getElementById('sheetSelect').value === 'custom') {
             sW = parseFloat(document.getElementById('customW').value) || 0;
             sH = parseFloat(document.getElementById('customH').value) || 0;
         } else { [sW, sH] = document.getElementById('sheetSelect').value.split(',').map(Number); }
-
         const firstPage = loadedPdf.getPages()[0];
         const pW = ptToMm(firstPage.getWidth());
         const pH = ptToMm(firstPage.getHeight());
         const g = parseFloat(document.getElementById('gutterInput').value) || 0;
-
         let reqW = (mode === 'accavallato') ? (pW * 2) + g : (pW * 4) + (g * 3);
         let reqH = (mode === 'accavallato') ? pH : (pH * 2) + g;
-
         if (sW >= reqW && sH >= reqH) {
-            monitor.innerHTML = `> STATO: OK<br>> Ingombro max richiesto: ${reqW.toFixed(1)}x${reqH.toFixed(1)} mm`;
+            monitor.innerHTML = `> STATO: OK | Ingombro: ${reqW.toFixed(1)}x${reqH.toFixed(1)} mm`;
             monitor.className = "monitor-ok";
         } else {
-            monitor.innerHTML = `> ERRORE: FOGLIO PICCOLO<br>> Richiesto: ${reqW.toFixed(1)}x${reqH.toFixed(1)} mm`;
+            monitor.innerHTML = `> ERRORE: FOGLIO PICCOLO | Richiesto: ${reqW.toFixed(1)} mm`;
             monitor.className = "monitor-error";
         }
     }
@@ -138,16 +134,18 @@
         if (!loadedPdf) return alert("Carica prima un PDF!");
         let total = loadedPdf.getPageCount();
         if (total % 4 !== 0) total = Math.ceil(total / 4) * 4;
-        let plan = [], temp = total;
+        let plan = [];
+        let temp = total;
+
         while (temp > 0) {
             if (temp >= 32) { plan.push(16); temp -= 16; }
-            else if (temp === 20) { plan.push(16, 4); temp = 0; } // Gestione speciale 20 = 16 + 4
-            else if (temp === 24) { plan.push(16, 8); temp = 0; }
-            else if (temp === 16) { plan.push(16); temp = 0; }
+            else if (temp === 28) { plan.push(12, 16); temp = 0; }
+            else if (temp === 24) { plan.push(8, 16); temp = 0; }
+            else if (temp === 20) { plan.push(20); temp = 0; }
             else { plan.push(temp); temp = 0; }
         }
         document.getElementById('sigInput').value = plan.join(', ');
-        writeLog(`Piano calcolato: ${plan.join(', ')}`);
+        writeLog(`Piano editoriale: ${plan.join(', ')}`);
     }
 
     document.getElementById('runBtn').onclick = async () => {
@@ -155,69 +153,71 @@
         const mode = document.getElementById('modeSelect').value;
         const { PDFDocument, degrees } = PDFLib;
         const outDoc = await PDFDocument.create();
-        
         let sW_mm, sH_mm;
         if (document.getElementById('sheetSelect').value === 'custom') {
             sW_mm = parseFloat(document.getElementById('customW').value);
             sH_mm = parseFloat(document.getElementById('customH').value);
         } else { [sW_mm, sH_mm] = document.getElementById('sheetSelect').value.split(',').map(Number); }
-        
         const sheetW = pt(sW_mm), sheetH = pt(sH_mm);
         const gutter = pt(parseFloat(document.getElementById('gutterInput').value));
         const embeddedPages = await outDoc.embedPages(loadedPdf.getPages());
         const sigPlan = document.getElementById('sigInput').value.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
-        
         let totalProcessed = 0;
 
-        for (const sigSize of sigPlan) {
-            // Se la segnatura è 16 e siamo in modalità foglio intero, usa lo schema 4x2
-            if (mode === '16esimo_foglio' && sigSize === 16) {
-                writeLog("Generazione Sedicesimo professionale (4x2)...");
-                const off = totalProcessed;
-                const bianca = outDoc.addPage([sheetW, sheetH]);
-                const volta = outDoc.addPage([sheetW, sheetH]);
+        for (let sigSize of sigPlan) {
+            let subSigs = (sigSize === 20) ? [16, 4] : [sigSize];
+            let currentOffset = totalProcessed;
 
-                const schemaB = [
-                    {i:off+4, r:180, c:0, row:1}, {i:off+11, r:180, c:1, row:1}, {i:off+8, r:180, c:2, row:1}, {i:off+7, r:180, c:3, row:1},
-                    {i:off+3, r:0,   c:0, row:0}, {i:off+12, r:0,   c:1, row:0}, {i:off+15, r:0,   c:2, row:0}, {i:off+0, r:0,   c:3, row:0}
-                ];
-                const schemaV = [
-                    {i:off+6, r:180, c:0, row:1}, {i:off+9,  r:180, c:1, row:1}, {i:off+10, r:180, c:2, row:1}, {i:off+5, r:180, c:3, row:1},
-                    {i:off+1, r:0,   c:0, row:0}, {i:off+14, r:0,   c:1, row:0}, {i:off+13, r:0,   c:2, row:0}, {i:off+2, r:0,   c:3, row:0}
-                ];
+            for (let subSize of subSigs) {
+                if (mode === 'accavallato' || subSize === 4) {
+                    writeLog(`Generazione Quartino ${subSize} pag...`);
+                    for (let i = 0; i < subSize / 2; i++) {
+                        const sheet = outDoc.addPage([sheetW, sheetH]);
+                        let lIdx = (i % 2 === 0) ? (currentOffset + subSize) - 1 - i : currentOffset + i;
+                        let rIdx = (i % 2 === 0) ? currentOffset + i : (currentOffset + subSize) - 1 - i;
+                        const draw = (idx, side) => {
+                            if (idx >= embeddedPages.length) return;
+                            const p = embeddedPages[idx];
+                            const x = (side === 'left') ? (sheetW / 2) - (gutter / 2) - p.width : (sheetW / 2) + (gutter / 2);
+                            sheet.drawPage(p, { x, y: (sheetH - p.height) / 2 });
+                        };
+                        draw(lIdx, 'left'); draw(rIdx, 'right');
+                    }
+                } 
+                else if (mode === '16esimo_foglio') {
+                    let cols, rows, schemaB, schemaV;
+                    if (subSize === 16) {
+                        cols = 4; rows = 2;
+                        schemaB = [{i:4,r:180,c:0,row:1},{i:11,r:180,c:1,row:1},{i:8,r:180,c:2,row:1},{i:7,r:180,c:3,row:1},{i:3,r:0,c:0,row:0},{i:12,r:0,c:1,row:0},{i:15,r:0,c:2,row:0},{i:0,r:0,c:3,row:0}];
+                        schemaV = [{i:6,r:180,c:0,row:1},{i:9,r:180,c:1,row:1},{i:10,r:180,c:2,row:1},{i:5,r:180,c:3,row:1},{i:1,r:0,c:0,row:0},{i:14,r:0,c:1,row:0},{i:13,r:0,c:2,row:0},{i:2,r:0,c:3,row:0}];
+                    } else if (subSize === 8) {
+                        cols = 4; rows = 1;
+                        schemaB = [{i:3,r:180,c:0,row:0},{i:4,r:180,c:1,row:0},{i:5,r:180,c:2,row:0},{i:2,r:180,c:3,row:0}]; // Schema 8avo a giro
+                        schemaV = [{i:1,r:0,c:0,row:0},{i:6,r:0,c:1,row:0},{i:7,r:0,c:2,row:0},{i:0,r:0,c:3,row:0}];
+                    } else if (subSize === 12) {
+                        cols = 3; rows = 2;
+                        schemaB = [{i:3,r:180,c:0,row:1},{i:8,r:180,c:1,row:1},{i:7,r:180,c:2,row:1},{i:2,r:0,c:0,row:0},{i:9,r:0,c:1,row:0},{i:0,r:0,c:2,row:0}];
+                        schemaV = [{i:5,r:180,c:0,row:1},{i:6,r:180,c:1,row:1},{i:11,r:180,c:2,row:1},{i:4,r:0,c:0,row:0},{i:7,r:0,c:1,row:0},{i:1,r:0,c:2,row:0}];
+                    }
 
-                const drawGrid = (page, schema) => {
-                    schema.forEach(s => {
-                        if (s.i >= embeddedPages.length) return;
-                        const p = embeddedPages[s.i];
-                        const gridW = (p.width * 4) + (gutter * 3);
-                        const gridH = (p.height * 2) + gutter;
-                        const x = ((sheetW - gridW) / 2) + (s.c * (p.width + gutter));
-                        const y = ((sheetH - gridH) / 2) + (s.row * (p.height + gutter));
-                        page.drawPage(p, { 
-                            x: s.r === 180 ? x + p.width : x, 
-                            y: s.r === 180 ? y + p.height : y, 
-                            rotate: degrees(s.r) 
+                    writeLog(`Generazione Segnatura ${subSize} in griglia...`);
+                    const bianca = outDoc.addPage([sheetW, sheetH]);
+                    const volta = outDoc.addPage([sheetW, sheetH]);
+                    const drawGrid = (page, schema) => {
+                        schema.forEach(s => {
+                            let realIdx = currentOffset + s.i;
+                            if (realIdx >= embeddedPages.length) return;
+                            const p = embeddedPages[realIdx];
+                            const gridW = (p.width * cols) + (gutter * (cols - 1));
+                            const gridH = (p.height * rows) + (gutter * (rows - 1));
+                            const x = ((sheetW - gridW) / 2) + (s.c * (p.width + gutter));
+                            const y = ((sheetH - gridH) / 2) + (s.row * (p.height + gutter));
+                            page.drawPage(p, { x: s.r === 180 ? x + p.width : x, y: s.r === 180 ? y + p.height : y, rotate: degrees(s.r) });
                         });
-                    });
-                };
-                drawGrid(bianca, schemaB); drawGrid(volta, schemaV);
-            } 
-            // In tutti gli altri casi (Accavallato oppure code da 4, 8, 12), usa la logica 2-up
-            else {
-                writeLog(`Generazione Segnatura da ${sigSize} (modalità 2-up centrata)...`);
-                for (let i = 0; i < sigSize / 2; i++) {
-                    const sheet = outDoc.addPage([sheetW, sheetH]);
-                    let lIdx = (i % 2 === 0) ? (totalProcessed + sigSize) - 1 - i : totalProcessed + i;
-                    let rIdx = (i % 2 === 0) ? totalProcessed + i : (totalProcessed + sigSize) - 1 - i;
-                    const draw = (idx, side) => {
-                        if (idx >= embeddedPages.length) return;
-                        const p = embeddedPages[idx];
-                        const x = (side === 'left') ? (sheetW / 2) - (gutter / 2) - p.width : (sheetW / 2) + (gutter / 2);
-                        sheet.drawPage(p, { x, y: (sheetH - p.height) / 2 });
                     };
-                    draw(lIdx, 'left'); draw(rIdx, 'right');
+                    drawGrid(bianca, schemaB); drawGrid(volta, schemaV);
                 }
+                currentOffset += subSize;
             }
             totalProcessed += sigSize;
         }
