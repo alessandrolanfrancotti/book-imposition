@@ -203,16 +203,16 @@
     
     <div class="section">
         <span class="section-title">Paper</span>
-        <div class="grid">
+        
             <div>
                 <label>SIZES</label>
                 <select id="sheetSelect" onchange="toggleCustomSheet(); checkFit();">
-                    <option value="420,297">A3 / CHROME</option>
-                    <option value="450,320">SRA3 / PLATINUM</option>
-                    <option value="594,420">A2 / MERCURY</option>
-                    <option value="500,700">50x70 / TITANIUM</option>
-                    <option value="700,1000">70x100 / THE DON</option>
-                    <option value="custom">CUSTOM DRIP</option>
+                    <option value="420,297">A3</option>
+                    <option value="450,320">SRA3</option>
+                    <option value="594,420">A2</option>
+                    <option value="500,700">50x70</option>
+                    <option value="700,1000">70x100</option>
+                    <option value="custom">CUSTOM</option>
                 </select>
             </div>
             <div id="customSheetDims" class="grid hidden">
@@ -220,23 +220,21 @@
                 <div><label>H mm</label><input type="number" id="customH" oninput="checkFit()"></div>
             </div>
         </div>
-        <div id="monitor" class="chrome-text">> AWAITIN' THE MANUSCRIPT...</div>
+        
     </div>
 
     <div class="section">
         <span class="section-title">Signatures</span>
-        <label>SEQUENCE</label>
-        <input type="text" id="sigInput" placeholder="...">
+        <input type="text" id="sigInput" placeholder="SEQUENCE">
     </div>
 
     <div class="upload-zone" onclick="document.getElementById('pdfFile').click()">
         <input type="file" id="pdfFile" accept="application/pdf" style="display:none">
-        <span>Drop The Book</span>
+        <span>Drop The BooK</span>
     </div>
 
-    <button id="runBtn">Bless it</button>
-    
-    <div id="log">> STACK READY.</div>
+    <button id="runBtn">Download</button>
+
 </div>
 
 <script>
