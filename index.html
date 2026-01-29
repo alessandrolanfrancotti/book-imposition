@@ -120,6 +120,7 @@
         <span class="section-title">Paper</span>
         <label>SIZES</label>
         <select id="sheetSelect" onchange="toggleCustomSheet();">
+            <option value="210,297">A4</option>
             <option value="420,297">A3</option>
             <option value="450,320">SRA3</option>
             <option value="594,420">A2</option>
@@ -173,16 +174,13 @@
         let plan = [];
         let tempTotal = total;
         
-        // Riempie con segnature da 16
         while (tempTotal >= 16) {
             plan.push(16);
             tempTotal -= 16;
         }
         
-        // Gestione dell'avanzo (la segnatura debole)
         if (tempTotal > 0) {
             if (plan.length > 0) {
-                // Inserisce l'avanzo come PENULTIMA posizione
                 plan.splice(plan.length - 1, 0, tempTotal);
             } else {
                 plan.push(tempTotal);
@@ -209,7 +207,6 @@
             
             let totalProcessed = 0;
             for (const sigSize of sigPlan) {
-                // Imposizione a quartino semplice (4 facciate per foglio, 2 per lato)
                 for (let i = 0; i < sigSize / 2; i++) {
                     const sheet = outDoc.addPage([sheetW, sheetH]);
                     let lIdx = (i % 2 === 0) ? (totalProcessed + sigSize) - 1 - i : totalProcessed + i;
