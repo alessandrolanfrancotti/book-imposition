@@ -161,26 +161,24 @@
       object-position: center;
     }
 
-    /* ---------- NEW: SIZES ROW (Select 50% + W 25% + H 25%) ---------- */
+    /* ---------- SIZES ROW (Select 50% + W 25% + H 25%) ---------- */
     .sizes-row {
       display: flex;
-      gap: 12px;              /* gutter */
-      align-items: flex-end;  /* allinea i box in basso */
+      gap: 12px;
+      align-items: flex-end;
       flex-wrap: nowrap;
     }
-    .sizes-row .col-50 { flex: 2 1 0; } /* ~50% */
-    .sizes-row .col-25 { flex: 1 1 0; } /* ~25% */
+    .sizes-row .col-50 { flex: 2 1 0; }
+    .sizes-row .col-25 { flex: 1 1 0; }
     .sizes-row .col-50,
-    .sizes-row .col-25 { min-width: 0; } /* evita overflow */
+    .sizes-row .col-25 { min-width: 0; }
 
-    /* Se lo schermo è davvero stretto, meglio andare a capo */
     @media (max-width: 520px) {
       .sizes-row { flex-wrap: wrap; }
       .sizes-row .col-50,
       .sizes-row .col-25 { flex: 1 1 100%; }
     }
 
-    /* ---------- MISC ---------- */
     .hidden { display: none !important; }
   </style>
 </head>
@@ -196,7 +194,6 @@
     <div class="section">
       <span class="section-title">Paper</span>
 
-      <!-- TUTTO SU UNA RIGA: SIZES (50%) + W (25%) + H (25%) -->
       <div class="sizes-row">
         <div class="col-50">
           <label>SIZES</label>
@@ -222,7 +219,6 @@
         </div>
       </div>
 
-      <!-- MONITOR TERMINALE -->
       <div id="monitor">&gt; Carica un PDF per iniziare...</div>
     </div>
 
@@ -232,7 +228,7 @@
       <input type="text" id="sigInput" placeholder="SEQUENCE" />
     </div>
 
-    <!-- UPLOAD (image) -->
+    <!-- UPLOAD -->
     <div class="upload-zone" id="uploadZone">
       <input type="file" id="pdfFile" accept="application/pdf" class="hidden">
       <div class="upload-wrap">
@@ -240,7 +236,7 @@
       </div>
     </div>
 
-    <!-- DOWNLOAD (image) -->
+    <!-- DOWNLOAD -->
     <button id="runBtn" class="btn-img">
       <div class="btn-wrap">
         <img src="DOWNLOAD.png" alt="Download">
@@ -252,6 +248,12 @@
   <script>
     const pt = (mm) => (mm * 72) / 25.4;
     const ptToMm = (p) => (p * 25.4) / 72;
+
+    // ✅ CROP “INNER MARGIN” per PDF con abbondanze/segni (InDesign)
+    // 0.3 inch = 21.6 pt = 7.62 mm
+    const INNER_CROP_INCH = 0.3;
+    const INNER_CROP_PT = INNER_CROP_INCH * 72;      // 21.6 pt
+    const INNER_CROP_MM = INNER_CROP_INCH * 25.4;    // 7.62 mm
 
     let loadedPdf = null;
 
@@ -284,6 +286,7 @@
     }
 
     // Monitor: controlla se il foglio contiene l’imposizione 2-up (left+right)
+    // ✅ ora considera anche il crop interno 0.3"
     function checkFit() {
       if (!loadedPdf) {
         monitor.textContent = "> Carica un PDF per iniziare...";
@@ -296,14 +299,16 @@
       const pW = ptToMm(firstPage.getWidth());
       const pH = ptToMm(firstPage.getHeight());
 
-      const reqW = pW * 2;
+      // 2-up: ogni pagina perde INNER_CROP_MM sul margine interno (quindi -7.62mm)
+      const placedW = Math.max(0, pW - INNER_CROP_MM);
+      const reqW = placedW * 2;
       const reqH = pH;
 
       if (sW >= reqW && sH >= reqH) {
-        monitor.innerHTML = `> STATO: OK | Ingombro: ${reqW.toFixed(1)}×${reqH.toFixed(1)} mm`;
+        monitor.innerHTML = `> STATO: OK | Ingombro: ${reqW.toFixed(1)}×${reqH.toFixed(1)} mm (crop ${INNER_CROP_MM.toFixed(2)}mm)`;
         monitor.className = "monitor-ok";
       } else {
-        monitor.innerHTML = `> ERRORE: FOGLIO PICCOLO | Min: ${reqW.toFixed(1)}×${reqH.toFixed(1)} mm`;
+        monitor.innerHTML = `> ERRORE: FOGLIO PICCOLO | Min: ${reqW.toFixed(1)}×${reqH.toFixed(1)} mm (crop ${INNER_CROP_MM.toFixed(2)}mm)`;
         monitor.className = "monitor-error";
       }
     }
@@ -364,9 +369,30 @@
 
         if (sigPlan.length === 0) return alert("INVALID SIGNATURE SEQUENCE.");
 
-        const embeddedPages = await outDoc.embedPages(loadedPdf.getPages());
+        const srcPages = loadedPdf.getPages();
+
+        // ✅ CREIAMO DUE SET DI PAGINE “EMBED”:
+        // - per quando una pagina va a SINISTRA: tagliamo il bordo DESTRO (margine interno)
+        // - per quando una pagina va a DESTRA:  tagliamo il bordo SINISTRO (margine interno)
+        const bboxesForLeftPlacement = srcPages.map(p => {
+          const w = p.getWidth();
+          const h = p.getHeight();
+          const crop = Math.min(INNER_CROP_PT, w); // sicurezza
+          return { left: 0, bottom: 0, right: w - crop, top: h };
+        });
+
+        const bboxesForRightPlacement = srcPages.map(p => {
+          const w = p.getWidth();
+          const h = p.getHeight();
+          const crop = Math.min(INNER_CROP_PT, w); // sicurezza
+          return { left: crop, bottom: 0, right: w, top: h };
+        });
+
+        const embeddedLeft = await outDoc.embedPages(srcPages, bboxesForLeftPlacement);
+        const embeddedRight = await outDoc.embedPages(srcPages, bboxesForRightPlacement);
 
         let totalProcessed = 0;
+
         for (const sigSize of sigPlan) {
           for (let i = 0; i < sigSize / 2; i++) {
             const sheet = outDoc.addPage([sheetW, sheetH]);
@@ -380,16 +406,25 @@
               : (totalProcessed + sigSize) - 1 - i;
 
             const draw = (idx, side) => {
-              if (idx >= embeddedPages.length) return;
-              const p = embeddedPages[idx];
-              const x = (side === 'left') ? (sheetW / 2) - p.width : (sheetW / 2);
+              if (idx >= srcPages.length) return;
+
+              // ✅ scegliamo l’embed corretto in base al lato,
+              // così il crop è sempre sul margine interno
+              const p = (side === 'left') ? embeddedLeft[idx] : embeddedRight[idx];
+
+              const x = (side === 'left')
+                ? (sheetW / 2) - p.width
+                : (sheetW / 2);
+
               const y = (sheetH - p.height) / 2;
+
               sheet.drawPage(p, { x, y, width: p.width, height: p.height });
             };
 
             draw(lIdx, 'left');
             draw(rIdx, 'right');
           }
+
           totalProcessed += sigSize;
         }
 
