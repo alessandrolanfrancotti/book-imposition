@@ -195,29 +195,27 @@
                         rIdx = (totalProcessed + sigSize) - 1 - i;
                     }
 
-                    const draw = (idx, side) => {
+                   const draw = (idx, side) => {
                         if (idx >= embeddedPages.length) return; 
                         const p = embeddedPages[idx];
                         
-                        // Calcoliamo l'offset se il PDF originale è più grande del formato libro (es. ha i crocini)
-                        // Assumiamo che il contenuto del libro sia centrato nel PDF originale
-                        const offset = (p.width - bookW) / 2;
-
+                        // Determiniamo il punto di contatto centrale (il dorso)
+                        const centroDorso = sheetW / 2;
+                        
                         let x;
                         if (side === 'left') {
-                            // La pagina di sinistra deve finire esattamente dove inizia il gutter centrale
-                            // Quindi: Centro - Metà Gutter - Larghezza Libro - Offset Crocini
-                            x = (sheetW / 2) - (gutter / 2) - bookW - offset;
+                            // La pagina sinistra deve avere il suo bordo destro 
+                            // (che include i crocini/abbondanza interna) esattamente sul centro.
+                            // Per farlo, sottraiamo la sua intera larghezza dal centro e aggiungiamo metà gutter.
+                            x = centroDorso - p.width - (gutter / 2);
                         } else {
-                            // La pagina di destra deve iniziare esattamente dove finisce il gutter centrale
-                            // Quindi: Centro + Metà Gutter - Offset Crocini
-                            x = (sheetW / 2) + (gutter / 2) - offset;
+                            // La pagina destra deve iniziare dal centro più metà gutter
+                            x = centroDorso + (gutter / 2);
                         }
 
+                        // Centratura verticale semplice
                         const y = (sheetH - p.height) / 2;
 
-                        // Applichiamo un "Clip" concettuale: disegniamo la pagina.
-                        // I vettori che eccedono il foglio macchina verranno ignorati in stampa.
                         sheet.drawPage(p, { 
                             x: x, 
                             y: y, 
