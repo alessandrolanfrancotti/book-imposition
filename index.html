@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Book Imposer Pro V12 - Monitor Mode</title>
+    <title>Book Imposer Pro V13</title>
     <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; display: flex; justify-content: center; padding: 20px; margin: 0; }
@@ -14,10 +14,10 @@
         label { display: block; font-size: 0.75rem; color: #aaa; margin-bottom: 5px; }
         input, select { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #121212; color: #fff; box-sizing: border-box; }
         
-        /* STILE MONITOR */
-        #monitor { margin-top: 10px; padding: 12px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; text-align: center; border: 1px solid #444; transition: 0.3s; background: #1a1a1a; color: #888; }
-        .monitor-ok { background: #1b4d3e !important; color: #00ffaa !important; border-color: #00d1b2 !important; }
-        .monitor-error { background: #4d1b1b !important; color: #ff6b6b !important; border-color: #ff4757 !important; }
+        /* MONITOR ESTETICA TERMINALE */
+        #monitor { margin-top: 10px; font-family: 'Courier New', monospace; font-size: 0.8rem; background: #000; color: #888; padding: 12px; border-radius: 5px; border: 1px solid #333; min-height: 20px; }
+        .monitor-ok { color: #00ff00 !important; }
+        .monitor-error { color: #ff4757 !important; }
 
         .upload-zone { border: 2px dashed #444; padding: 25px; text-align: center; margin: 20px 0; border-radius: 8px; cursor: pointer; transition: 0.3s; }
         .upload-zone:hover { border-color: #00d1b2; background: #1a1a1a; }
@@ -30,7 +30,7 @@
 <body>
 
 <div class="panel">
-    <h1>📖 Book Imposer Pro V12</h1>
+    <h1>📖 Book Imposer Pro V13</h1>
     
     <div class="section">
         <span class="section-title">1. Foglio di Stampa (Macchina)</span>
@@ -52,7 +52,7 @@
                 <div><label>A mm</label><input type="number" id="customH" oninput="checkFit()"></div>
             </div>
         </div>
-        <div id="monitor">Selezionare un formato di stampa e caricare un PDF</div>
+        <div id="monitor">> In attesa di caricamento PDF...</div>
     </div>
 
     <div class="section">
@@ -96,11 +96,10 @@
         document.getElementById('customSheetDims').style.display = (val === 'custom') ? 'grid' : 'none';
     }
 
-    // FUNZIONE MONITOR
     function checkFit() {
         const monitor = document.getElementById('monitor');
         if (!loadedPdf) {
-            monitor.innerText = "Selezionare un formato di stampa e caricare un PDF";
+            monitor.innerText = "> In attesa di caricamento PDF...";
             monitor.className = "";
             return;
         }
@@ -117,15 +116,14 @@
         const bH = parseFloat(document.getElementById('bookH').value) || 0;
         const g = parseFloat(document.getElementById('gutterInput').value) || 0;
 
-        // Calcolo ingombro totale dell'imposizione (Fronte = 2 pagine + Gutter)
         const totalW = (bW * 2) + g;
         const totalH = bH;
 
         if (sW >= totalW && sH >= totalH) {
-            monitor.innerText = `✅ OK: Il formato ${sW}x${sH} contiene perfettamente il libro (${totalW.toFixed(1)}x${totalH} mm)`;
+            monitor.innerText = `> STATO: OK. Spazio occupato: ${totalW.toFixed(1)}x${totalH} mm su ${sW}x${sH}.`;
             monitor.className = "monitor-ok";
         } else {
-            monitor.innerText = `⚠️ ATTENZIONE: Il foglio macchina è troppo piccolo! (Richiesto min. ${totalW.toFixed(1)}x${totalH} mm)`;
+            monitor.innerText = `> ERRORE: Foglio troppo piccolo. Richiesto: ${totalW.toFixed(1)}x${totalH} mm.`;
             monitor.className = "monitor-error";
         }
     }
@@ -151,10 +149,7 @@
         if (!loadedPdf) return alert("Prima carica un file PDF!");
         let total = loadedPdf.getPageCount();
         if (total % 4 !== 0) total = Math.ceil(total / 4) * 4;
-
-        let plan = [];
-        let tempTotal = total;
-
+        let plan = [], tempTotal = total;
         while (tempTotal > 0) {
             if (tempTotal >= 32) { plan.push(16); tempTotal -= 16; }
             else if (tempTotal === 20) { plan.push(20); tempTotal = 0; }
@@ -169,36 +164,24 @@
 
     document.getElementById('runBtn').onclick = async () => {
         if (!loadedPdf) return alert("Seleziona un file!");
-
         try {
-            writeLog("Avvio...");
+            writeLog("Elaborazione...");
             const { PDFDocument } = PDFLib;
             const outDoc = await PDFDocument.create();
-
             let sW_mm, sH_mm;
             if (document.getElementById('sheetSelect').value === 'custom') {
                 sW_mm = parseFloat(document.getElementById('customW').value);
                 sH_mm = parseFloat(document.getElementById('customH').value);
-            } else {
-                [sW_mm, sH_mm] = document.getElementById('sheetSelect').value.split(',').map(Number);
-            }
-            
-            const sheetW = pt(sW_mm);
-            const sheetH = pt(sH_mm);
-            const gutter = pt(parseFloat(document.getElementById('gutterInput').value));
-            const bookW = pt(parseFloat(document.getElementById('bookW').value));
-            const bookH = pt(parseFloat(document.getElementById('bookH').value));
-
+            } else { [sW_mm, sH_mm] = document.getElementById('sheetSelect').value.split(',').map(Number); }
+            const sheetW = pt(sW_mm), sheetH = pt(sH_mm), gutter = pt(parseFloat(document.getElementById('gutterInput').value));
             const sigPlan = document.getElementById('sigInput').value.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
             const embeddedPages = await outDoc.embedPages(loadedPdf.getPages());
             let totalProcessed = 0;
-
             for (const sigSize of sigPlan) {
                 for (let i = 0; i < sigSize / 2; i++) {
                     const sheet = outDoc.addPage([sheetW, sheetH]);
                     let lIdx = (i % 2 === 0) ? (totalProcessed + sigSize) - 1 - i : totalProcessed + i;
                     let rIdx = (i % 2 === 0) ? totalProcessed + i : (totalProcessed + sigSize) - 1 - i;
-
                     const draw = (idx, side) => {
                         if (idx >= embeddedPages.length) return;
                         const p = embeddedPages[idx];
@@ -206,21 +189,15 @@
                         const y = (sheetH - p.height) / 2;
                         sheet.drawPage(p, { x, y, width: p.width, height: p.height });
                     };
-
-                    draw(lIdx, 'left');
-                    draw(rIdx, 'right');
+                    draw(lIdx, 'left'); draw(rIdx, 'right');
                 }
                 totalProcessed += sigSize;
             }
-
             const pdfBytes = await outDoc.save();
             const blob = new Blob([pdfBytes], { type: 'application/pdf' });
             window.open(URL.createObjectURL(blob));
             writeLog("✅ COMPLETATO!");
-
-        } catch (e) {
-            writeLog(`❌ ERRORE: ${e.message}`);
-        }
+        } catch (e) { writeLog(`❌ ERRORE: ${e.message}`); }
     };
 </script>
 </body>
