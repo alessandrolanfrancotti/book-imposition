@@ -1,233 +1,327 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⛓️ Lil Imposer - Pro Binding Edition ⛓️</title>
-    <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --chrome-gradient: linear-gradient(to bottom, #fff 0%, #888 48%, #fff 52%, #444 100%);
-            --chrome-border: linear-gradient(145deg, #fff, #444, #fff, #888);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⛓️ Lil Imposer ⛓️</title>
 
-        * { box-sizing: border-box; }
-        html, body { height: 100%; margin: 0; overflow: hidden; }
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
 
-        body { 
-            font-family: 'Impact', sans-serif; 
-            background: radial-gradient(circle, #222 0%, #000 100%);
-            color: #fff; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            padding: 10px;
-        }
+  <style>
+    :root {
+      --chrome-gradient: linear-gradient(to bottom, #fff 0%, #888 48%, #fff 52%, #444 100%);
+      --chrome-border: linear-gradient(145deg, #fff, #444, #fff, #888);
+    }
 
-        .panel { 
-            background: #000;
-            padding: clamp(20px, 4vh, 45px); 
-            width: 100%; 
-            max-width: 700px; 
-            max-height: 98vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            border: 4px solid;
-            border-image: var(--chrome-border) 1;
-            box-shadow: 0 0 15px #fff, 0 0 30px rgba(255,255,255,0.5), inset 0 0 10px #fff;
-        }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; overflow: hidden; }
 
-        h1 { 
-            font-family: 'UnifrakturCook', cursive;
-            background: var(--chrome-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-align: center; 
-            font-size: clamp(3rem, 10vh, 5.5rem); 
-            filter: drop-shadow(0 0 15px rgba(255,255,255,0.6));
-            margin: 0 0 15px 0;
-            line-height: 1;
-        }
+    body {
+      font-family: 'Impact', sans-serif;
+      background: radial-gradient(circle, #222 0%, #000 100%);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+    }
 
-        .section { 
-            background: rgba(255, 255, 255, 0.02);
-            padding: clamp(10px, 2vh, 20px); 
-            margin-bottom: clamp(10px, 2vh, 20px); 
-            border: 2px solid;
-            border-image: var(--chrome-border) 1;
-        }
+    .panel {
+      background: #000;
+      padding: clamp(20px, 4vh, 45px);
+      width: 100%;
+      max-width: 700px;
+      max-height: 98vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      border: 4px solid;
+      border-image: var(--chrome-border) 1;
+      box-shadow: 0 0 15px #fff, 0 0 30px rgba(255,255,255,0.5), inset 0 0 10px #fff;
+    }
 
-        .section-title { 
-            font-family: 'UnifrakturCook', cursive;
-            font-size: clamp(1.2rem, 3vh, 2rem); 
-            background: var(--chrome-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px; 
-            display: block;
-        }
+    /* --- LOGO AREA (cover crop laterale) --- */
+    .logo-wrap {
+      /* altezza responsiva: più grande su schermi alti, più piccola su schermi bassi */
+      height: clamp(90px, 18vh, 200px);
+      width: 100%;
+      margin: 0 0 15px 0;
 
-        label { 
-            display: block; font-size: 0.8rem; font-weight: bold;
-            background: var(--chrome-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px;
-        }
+      /* “maschera” per croppare i lati */
+      overflow: hidden;
 
-        input, select { 
-            width: 100%; padding: clamp(8px, 1.5vh, 15px); 
-            background: #000; color: #fff; font-family: 'Impact', sans-serif;
-            font-size: clamp(1rem, 2vh, 1.2rem); text-transform: uppercase;
-            border: 2px solid; border-image: var(--chrome-border) 1; outline: none;
-        }
+      /* estetica */
+      filter: drop-shadow(0 0 15px rgba(255,255,255,0.6));
+    }
 
-        .upload-zone { 
-            border: 3px solid; border-image: var(--chrome-border) 1;
-            padding: clamp(20px, 5vh, 40px); text-align: center; margin-bottom: clamp(10px, 2vh, 20px);
-            background: #000; cursor: pointer;
-        }
-        
-        .upload-zone span { 
-            font-family: 'UnifrakturCook', cursive;
-            font-size: clamp(1.5rem, 4vh, 2.5rem); 
-            background: var(--chrome-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+    .logo {
+      width: 100%;
+      height: 100%;
+      display: block;
 
-        button#runBtn { 
-            background: var(--chrome-gradient); color: #000; 
-            border: 2px solid #fff; padding: clamp(15px, 3vh, 25px); 
-            width: 100%; font-family: 'UnifrakturCook', cursive;
-            font-weight: 900; cursor: pointer; 
-            font-size: clamp(2rem, 5vh, 3rem); text-transform: uppercase;
-        }
+      /* qui succede la magia: riempie l’altezza e croppa il resto */
+      object-fit: cover;
 
-        .grid-custom { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
-        .hidden { display: none !important; }
-    </style>
+      /* se vuoi che il crop sia centrato (default). Puoi mettere left/right */
+      object-position: center;
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.02);
+      padding: clamp(10px, 2vh, 20px);
+      margin-bottom: clamp(10px, 2vh, 20px);
+      border: 2px solid;
+      border-image: var(--chrome-border) 1;
+    }
+
+    .section-title {
+      font-family: 'UnifrakturCook', cursive;
+      font-size: clamp(1.2rem, 3vh, 2rem);
+      background: var(--chrome-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: bold;
+      background: var(--chrome-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: clamp(8px, 1.5vh, 15px);
+      background: #000;
+      color: #fff;
+      font-family: 'Impact', sans-serif;
+      font-size: clamp(1rem, 2vh, 1.2rem);
+      text-transform: uppercase;
+      border: 2px solid;
+      border-image: var(--chrome-border) 1;
+      outline: none;
+    }
+
+    .upload-zone {
+      border: 3px solid;
+      border-image: var(--chrome-border) 1;
+      padding: clamp(20px, 5vh, 40px);
+      text-align: center;
+      margin-bottom: clamp(10px, 2vh, 20px);
+      background: #000;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .upload-zone span {
+      font-family: 'UnifrakturCook', cursive;
+      font-size: clamp(1.5rem, 4vh, 2.5rem);
+      background: var(--chrome-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    button#runBtn {
+      background: var(--chrome-gradient);
+      color: #000;
+      border: 2px solid #fff;
+      padding: clamp(15px, 3vh, 25px);
+      width: 100%;
+      font-family: 'UnifrakturCook', cursive;
+      font-weight: 900;
+      cursor: pointer;
+      font-size: clamp(2rem, 5vh, 3rem);
+      text-transform: uppercase;
+    }
+
+    .grid-custom {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 10px;
+    }
+
+    .hidden { display: none !important; }
+  </style>
 </head>
+
 <body>
+  <div class="panel">
 
-<div class="panel">
-    <h1>Lil Imposer</h1>
-    
+    <!-- LOGO al posto del testo -->
+    <div class="logo-wrap">
+      <img class="logo" src="LILIMPOSER.png" alt="Lil Imposer">
+    </div>
+
     <div class="section">
-        <span class="section-title">Paper</span>
-        <label>SIZES</label>
-        <select id="sheetSelect" onchange="toggleCustomSheet();">
-            <option value="210,297">A4</option>
-            <option value="420,297">A3</option>
-            <option value="450,320">SRA3</option>
-            <option value="594,420">A2</option>
-            <option value="500,700">50x70</option>
-            <option value="700,1000">70x100</option>
-            <option value="custom">CUSTOM</option>
-        </select>
-        <div id="customSheetDims" class="grid-custom hidden">
-            <div><label>W mm</label><input type="number" id="customW"></div>
-            <div><label>H mm</label><input type="number" id="customH"></div>
+      <span class="section-title">Paper</span>
+      <label>SIZES</label>
+      <select id="sheetSelect">
+        <option value="210,297">A4</option>
+        <option value="420,297">A3</option>
+        <option value="450,320">SRA3</option>
+        <option value="594,420">A2</option>
+        <option value="500,700">50x70</option>
+        <option value="700,1000">70x100</option>
+        <option value="custom">CUSTOM</option>
+      </select>
+
+      <div id="customSheetDims" class="grid-custom hidden">
+        <div>
+          <label>W mm</label>
+          <input type="number" id="customW" />
         </div>
+        <div>
+          <label>H mm</label>
+          <input type="number" id="customH" />
+        </div>
+      </div>
     </div>
 
     <div class="section">
-        <span class="section-title">Signatures</span>
-        <label>SEQUENCE</label>
-        <input type="text" id="sigInput" placeholder="SEQUENCE">
+      <span class="section-title">Signatures</span>
+      <label>SEQUENCE</label>
+      <input type="text" id="sigInput" placeholder="SEQUENCE" />
     </div>
 
-    <div class="upload-zone" onclick="document.getElementById('pdfFile').click()">
-        <input type="file" id="pdfFile" accept="application/pdf" style="display:none">
-        <span>Drop The BooK</span>
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="pdfFile" accept="application/pdf" class="hidden">
+      <span>Drop The BooK</span>
     </div>
 
     <button id="runBtn">Download</button>
-</div>
+  </div>
 
-<script>
+  <script>
     const pt = (mm) => (mm * 72) / 25.4;
     let loadedPdf = null;
 
+    const sheetSelect = document.getElementById('sheetSelect');
+    const customSheetDims = document.getElementById('customSheetDims');
+    const pdfFile = document.getElementById('pdfFile');
+    const uploadZone = document.getElementById('uploadZone');
+    const sigInput = document.getElementById('sigInput');
+    const runBtn = document.getElementById('runBtn');
+
     function toggleCustomSheet() {
-        const val = document.getElementById('sheetSelect').value;
-        document.getElementById('customSheetDims').classList.toggle('hidden', val !== 'custom');
+      const val = sheetSelect.value;
+      customSheetDims.classList.toggle('hidden', val !== 'custom');
     }
 
-    document.getElementById('pdfFile').onchange = async (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const arrayBuffer = await file.arrayBuffer();
-            loadedPdf = await PDFLib.PDFDocument.load(arrayBuffer);
-            autoCalculateSignatures();
-        }
-    };
+    sheetSelect.addEventListener('change', toggleCustomSheet);
+
+    uploadZone.addEventListener('click', () => pdfFile.click());
+
+    pdfFile.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const arrayBuffer = await file.arrayBuffer();
+      loadedPdf = await PDFLib.PDFDocument.load(arrayBuffer);
+      autoCalculateSignatures();
+    });
 
     function autoCalculateSignatures() {
-        if (!loadedPdf) return;
-        let total = loadedPdf.getPageCount();
-        if (total % 4 !== 0) total = Math.ceil(total / 4) * 4;
-        
-        let plan = [];
-        let tempTotal = total;
-        
-        while (tempTotal >= 16) {
-            plan.push(16);
-            tempTotal -= 16;
+      if (!loadedPdf) return;
+
+      let total = loadedPdf.getPageCount();
+      if (total % 4 !== 0) total = Math.ceil(total / 4) * 4;
+
+      const plan = [];
+      let tempTotal = total;
+
+      while (tempTotal >= 16) {
+        plan.push(16);
+        tempTotal -= 16;
+      }
+
+      if (tempTotal > 0) {
+        if (plan.length > 0) {
+          plan.splice(plan.length - 1, 0, tempTotal);
+        } else {
+          plan.push(tempTotal);
         }
-        
-        if (tempTotal > 0) {
-            if (plan.length > 0) {
-                plan.splice(plan.length - 1, 0, tempTotal);
-            } else {
-                plan.push(tempTotal);
-            }
-        }
-        
-        document.getElementById('sigInput').value = plan.join(', ');
+      }
+
+      sigInput.value = plan.join(', ');
     }
 
-    document.getElementById('runBtn').onclick = async () => {
-        if (!loadedPdf) return alert("LOAD THE HEAT.");
-        try {
-            const { PDFDocument } = PDFLib;
-            const outDoc = await PDFDocument.create();
-            let sW_mm, sH_mm;
-            if (document.getElementById('sheetSelect').value === 'custom') {
-                sW_mm = parseFloat(document.getElementById('customW').value);
-                sH_mm = parseFloat(document.getElementById('customH').value);
-            } else { [sW_mm, sH_mm] = document.getElementById('sheetSelect').value.split(',').map(Number); }
-            
-            const sheetW = pt(sW_mm), sheetH = pt(sH_mm);
-            const sigPlan = document.getElementById('sigInput').value.split(',').map(n => parseInt(n.trim()));
-            const embeddedPages = await outDoc.embedPages(loadedPdf.getPages());
-            
-            let totalProcessed = 0;
-            for (const sigSize of sigPlan) {
-                for (let i = 0; i < sigSize / 2; i++) {
-                    const sheet = outDoc.addPage([sheetW, sheetH]);
-                    let lIdx = (i % 2 === 0) ? (totalProcessed + sigSize) - 1 - i : totalProcessed + i;
-                    let rIdx = (i % 2 === 0) ? totalProcessed + i : (totalProcessed + sigSize) - 1 - i;
-                    
-                    const draw = (idx, side) => {
-                        if (idx >= embeddedPages.length) return;
-                        const p = embeddedPages[idx];
-                        const x = (side === 'left') ? (sheetW / 2) - p.width : (sheetW / 2);
-                        const y = (sheetH - p.height) / 2;
-                        sheet.drawPage(p, { x, y, width: p.width, height: p.height });
-                    };
-                    draw(lIdx, 'left'); draw(rIdx, 'right');
-                }
-                totalProcessed += sigSize;
-            }
-            const pdfBytes = await outDoc.save();
-            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-            window.open(URL.createObjectURL(blob));
-        } catch (e) { console.error(e); }
-    };
-</script>
+    runBtn.addEventListener('click', async () => {
+      if (!loadedPdf) return alert("LOAD THE HEAT.");
+
+      try {
+        const { PDFDocument } = PDFLib;
+        const outDoc = await PDFDocument.create();
+
+        let sW_mm, sH_mm;
+        if (sheetSelect.value === 'custom') {
+          sW_mm = parseFloat(document.getElementById('customW').value);
+          sH_mm = parseFloat(document.getElementById('customH').value);
+        } else {
+          [sW_mm, sH_mm] = sheetSelect.value.split(',').map(Number);
+        }
+
+        const sheetW = pt(sW_mm), sheetH = pt(sH_mm);
+
+        const sigPlan = sigInput.value
+          .split(',')
+          .map(n => parseInt(n.trim(), 10))
+          .filter(n => Number.isFinite(n) && n > 0);
+
+        if (sigPlan.length === 0) return alert("INVALID SIGNATURE SEQUENCE.");
+
+        const embeddedPages = await outDoc.embedPages(loadedPdf.getPages());
+
+        let totalProcessed = 0;
+
+        for (const sigSize of sigPlan) {
+          for (let i = 0; i < sigSize / 2; i++) {
+            const sheet = outDoc.addPage([sheetW, sheetH]);
+
+            const lIdx = (i % 2 === 0)
+              ? (totalProcessed + sigSize) - 1 - i
+              : totalProcessed + i;
+
+            const rIdx = (i % 2 === 0)
+              ? totalProcessed + i
+              : (totalProcessed + sigSize) - 1 - i;
+
+            const draw = (idx, side) => {
+              if (idx >= embeddedPages.length) return;
+              const p = embeddedPages[idx];
+              const x = (side === 'left') ? (sheetW / 2) - p.width : (sheetW / 2);
+              const y = (sheetH - p.height) / 2;
+              sheet.drawPage(p, { x, y, width: p.width, height: p.height });
+            };
+
+            draw(lIdx, 'left');
+            draw(rIdx, 'right');
+          }
+
+          totalProcessed += sigSize;
+        }
+
+        const pdfBytes = await outDoc.save();
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        window.open(URL.createObjectURL(blob));
+
+      } catch (e) {
+        console.error(e);
+        alert("SOMETHING BROKE. CHECK CONSOLE.");
+      }
+    });
+
+    // init
+    toggleCustomSheet();
+  </script>
 </body>
 </html>
