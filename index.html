@@ -42,26 +42,26 @@
       box-shadow: 0 0 15px #fff, 0 0 30px rgba(255,255,255,0.5), inset 0 0 10px #fff;
     }
 
-    /* ---------- INFO BUTTON ---------- */
+    /* ---------- INFO BUTTON (BIG & GLOBAL) ---------- */
     .info-btn{
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      width: 34px;
-      height: 34px;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 170px;
+      height: 170px;
       padding: 0;
-      border: 2px solid;
+      border: 4px solid;
       border-image: var(--chrome-border) 1;
       background: #000;
       cursor: pointer;
-      z-index: 1001;
+      z-index: 6000;
       display: grid;
       place-items: center;
     }
 
     .info-btn img{
-      width: 18px;
-      height: 18px;
+      width: 120px;
+      height: 120px;
       display: block;
     }
 
@@ -70,7 +70,7 @@
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.78);
-      z-index: 5000; /* sopra credits/concept (999) */
+      z-index: 5000;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -85,14 +85,14 @@
       border: 4px solid;
       border-image: var(--chrome-border) 1;
       box-shadow: 0 0 15px #fff, 0 0 30px rgba(255,255,255,0.35), inset 0 0 10px #fff;
-      padding: 18px 18px 16px;
+      padding: 18px;
       position: relative;
     }
 
     .modal h2{
       margin: 0 38px 10px 0;
       font-family: 'UnifrakturCook', cursive;
-      font-size: clamp(1.2rem, 2.4vh, 1.7rem);
+      font-size: 1.6rem;
       background: var(--chrome-gradient);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -103,16 +103,6 @@
       font-size: 0.95rem;
       line-height: 1.45;
       color: #fff;
-      opacity: 0.95;
-    }
-
-    .modal-body ul{
-      margin: 8px 0 14px 18px;
-      padding: 0;
-    }
-
-    .modal-body li{
-      margin: 6px 0;
     }
 
     .modal-close{
@@ -126,145 +116,7 @@
       background: #000;
       color: #fff;
       font-size: 22px;
-      line-height: 1;
       cursor: pointer;
-    }
-
-    /* ---------- LOGO (cover) ---------- */
-    .logo-wrap {
-      height: clamp(90px, 18vh, 200px);
-      width: 100%;
-      margin: 0 0 15px 0;
-      overflow: hidden;
-    }
-    .logo {
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: cover;
-      object-position: center;
-    }
-
-    /* ---------- SECTIONS ---------- */
-    .section {
-      background: rgba(255, 255, 255, 0.02);
-      padding: clamp(10px, 2vh, 20px);
-      margin-bottom: clamp(10px, 2vh, 20px);
-      border: 2px solid;
-      border-image: var(--chrome-border) 1;
-    }
-
-    .section-title {
-      font-family: 'UnifrakturCook', cursive;
-      font-size: clamp(1.2rem, 3vh, 2rem);
-      background: var(--chrome-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 10px;
-      display: block;
-    }
-
-    label {
-      display: block;
-      font-size: 0.8rem;
-      font-weight: bold;
-      background: var(--chrome-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 5px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-    }
-
-    input, select {
-      width: 100%;
-      padding: clamp(8px, 1.5vh, 15px);
-      background: #000;
-      color: #fff;
-      font-family: 'Impact', sans-serif;
-      font-size: clamp(1rem, 2vh, 1.2rem);
-      text-transform: uppercase;
-      border: 2px solid;
-      border-image: var(--chrome-border) 1;
-      outline: none;
-    }
-
-    /* ---------- TERMINAL MONITOR (fit check) ---------- */
-    #monitor{
-      margin-top: 10px;
-      font-family: "Courier New", monospace;
-      font-size: 0.8rem;
-      background: #000;
-      color: #888;
-      padding: 12px;
-      border-radius: 5px;
-      border: 1px solid #333;
-      min-height: 40px;
-      line-height: 1.35;
-    }
-    .monitor-ok { color: #00ff00 !important; }
-    .monitor-error { color: #ff4757 !important; }
-
-    /* ---------- UPLOAD (cover image) ---------- */
-    .upload-zone {
-      background: transparent;
-      border: none;
-      padding: 0;
-      margin-bottom: clamp(10px, 2vh, 20px);
-      width: 100%;
-      cursor: pointer;
-      user-select: none;
-    }
-    .upload-wrap {
-      height: clamp(90px, 14vh, 180px);
-      width: 100%;
-      overflow: hidden;
-    }
-    .upload-wrap img {
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: cover;
-      object-position: center;
-    }
-
-    /* ---------- DOWNLOAD BUTTON (cover) ---------- */
-    .btn-img {
-      background: transparent;
-      border: none;
-      padding: 0;
-      width: 100%;
-      cursor: pointer;
-    }
-    .btn-wrap {
-      height: clamp(90px, 14vh, 180px);
-      width: 100%;
-      overflow: hidden;
-    }
-    .btn-wrap img {
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: cover;
-      object-position: center;
-    }
-
-    /* ---------- SIZES ROW (Select 50% + W 25% + H 25%) ---------- */
-    .sizes-row {
-      display: flex;
-      gap: 12px;
-      align-items: flex-end;
-      flex-wrap: nowrap;
-    }
-    .sizes-row .col-50 { flex: 2 1 0; }
-    .sizes-row .col-25 { flex: 1 1 0; }
-    .sizes-row .col-50,
-    .sizes-row .col-25 { min-width: 0; }
-
-    @media (max-width: 520px) {
-      .sizes-row { flex-wrap: wrap; }
-      .sizes-row .col-50,
-      .sizes-row .col-25 { flex: 1 1 100%; }
     }
 
     .hidden { display: none !important; }
@@ -279,398 +131,96 @@
       font-size: 0.75rem;
       color: #fff;
       z-index: 999;
-      user-select: none;
     }
 
-    .credits a {
-      font-family: Impact, sans-serif;
-      font-weight: normal;
-      color: #fff;
-      text-decoration: none;
-      letter-spacing: 0.5px;
-    }
-
-    .credits a:hover {
-      text-decoration: underline;
-    }
-
-    /* ---------- CONCEPT TEXT ---------- */
     .concept {
       position: fixed;
       bottom: 12px;
       right: 14px;
       max-width: 180px;
-      font-family: IMPACT, Helvetica, sans-serif;
-      font-weight: bold;
+      font-family: Impact, sans-serif;
       font-size: 0.75rem;
-      color: #fff;
-      text-align: right;
       line-height: 1.4;
-      letter-spacing: 0.02em;
       z-index: 999;
-      user-select: none;
       opacity: 0.9;
+      text-align: right;
     }
   </style>
 </head>
 
+<body>
+
+<!-- INFO BUTTON GLOBAL -->
+<button id="infoBtn" class="info-btn">
+  <img src="INFO.png" alt="Info">
+</button>
+
 <div class="credits">
-  ©2026, Designed by 
-  <a href="https://www.instagram.com/alessandro_lanfrancotti/" target="_blank">
-    ALESSANDRO LANFRANCOTTI
-  </a>
+  ©2026, Designed by ALESSANDRO LANFRANCOTTI
 </div>
 
 <div class="concept">
-  Lil Imposer is my small contribution to the DIY fanzine world.<br>
-  Me and my friends were always wasting tons of time doing stupid wrong impositions by hand, or trying to use some insane, overcomplicated software.<br><br>
-
-  We just wanted to print, fold some paper and end up with a book.<br>
-  At some point I had to step in, for the good of the community.<br><br>
-
-  So I made this website: a simple online tool, no installs, no bullshit, to do imposition straight from your browser.<br><br>
-
-  It’s made for fanzines, print tests, ugly books, nice books, broken books.<br>
-  For designers, artists, students, anyone who wants to print stuff without losing their mind.<br><br>
-
-  Swag designers, have fun.<br>
   Print. Fold. Repeat.
 </div>
 
-<body>
-  <div class="panel">
+<div class="panel">
+  <h1>LIL IMPOSER</h1>
+  <p>Tool di imposizione PDF DIY.</p>
+</div>
 
-    <!-- INFO BUTTON -->
-    <button id="infoBtn" class="info-btn" type="button" aria-haspopup="dialog" aria-controls="infoOverlay" aria-label="Info export PDF">
-      <img src="INFO.png" alt="Info">
-    </button>
+<!-- INFO OVERLAY -->
+<div id="infoOverlay" class="overlay hidden">
+  <div class="modal">
+    <button id="infoClose" class="modal-close">×</button>
 
-    <!-- LOGO -->
-    <div class="logo-wrap">
-      <img class="logo" src="LILIMPOSER.png" alt="Lil Imposer">
-    </div>
+    <h2>Come esportare il PDF (leggi o soffri)</h2>
 
-    <div class="section">
-      <span class="section-title">Paper</span>
+    <div class="modal-body">
+      <p><strong>BLEED:</strong></p>
+      <ul>
+        <li>3mm su alto, basso e lato esterno</li>
+        <li>NO bleed sul lato interno</li>
+      </ul>
 
-      <div class="sizes-row">
-        <div class="col-50">
-          <label>SIZES</label>
-          <select id="sheetSelect">
-            <option value="210,297">A4 (Vertical)</option>
-            <option value="297,210">A4 (Horizontal)</option>
+      <p><strong>SEGNI:</strong></p>
+      <ul>
+        <li>SOLO segni di taglio</li>
+        <li>NO crocini di registro</li>
+        <li>NO color bars</li>
+        <li>NO indicatori pagina</li>
+      </ul>
 
-            <option value="420,297">A3 (Horizontal)</option>
-            <option value="297,420">A3 (Vertical)</option>
-
-            <option value="450,320">SRA3 (Horizontal)</option>
-            <option value="320,450">SRA3 (Vertical)</option>
-
-            <option value="594,420">A2 (Horizontal)</option>
-            <option value="420,594">A2 (Vertical)</option>
-
-            <option value="500,700">50x70 (Vertical)</option>
-            <option value="700,500">50x70 (Horizontal)</option>
-
-            <option value="700,1000">70x100 (Vertical)</option>
-            <option value="1000,700">70x100 (Horizontal)</option>
-
-            <option value="custom">CUSTOM</option>
-          </select>
-        </div>
-
-        <div class="col-25" id="customWCol">
-          <label>W mm</label>
-          <input type="number" id="customW" />
-        </div>
-
-        <div class="col-25" id="customHCol">
-          <label>H mm</label>
-          <input type="number" id="customH" />
-        </div>
-      </div>
-
-      <div id="monitor">&gt; Carica un PDF per iniziare...</div>
-    </div>
-
-    <div class="section">
-      <span class="section-title">Signatures</span>
-      <label>SEQUENCE</label>
-      <input type="text" id="sigInput" placeholder="SEQUENCE" />
-    </div>
-
-    <!-- UPLOAD -->
-    <div class="upload-zone" id="uploadZone">
-      <input type="file" id="pdfFile" accept="application/pdf" class="hidden">
-      <div class="upload-wrap">
-        <img src="DROPTHEBOOK.png" alt="Drop The Book">
-      </div>
-    </div>
-
-    <!-- DOWNLOAD -->
-    <button id="runBtn" class="btn-img">
-      <div class="btn-wrap">
-        <img src="DOWNLOAD.png" alt="Download">
-      </div>
-    </button>
-
-  </div>
-
-  <!-- INFO OVERLAY -->
-  <div id="infoOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
-    <div class="modal" role="document">
-      <button id="infoClose" class="modal-close" type="button" aria-label="Chiudi">×</button>
-
-      <h2 id="infoTitle">Esporta PDF per la stampa (senza rompere il tool)</h2>
-
-      <div class="modal-body">
-        <p><strong>Abbondanze (bleed):</strong></p>
-        <ul>
-          <li><strong>3 mm</strong> su <strong>lato esterno</strong>, <strong>alto</strong> e <strong>basso</strong>.</li>
-          <li><strong>Niente bleed sul lato interno</strong> (lato rilegatura).</li>
-          <li>Se sul lato interno c’è bleed “non succede nulla”, ma è buona abitudine evitarlo per non avere righe/artefatti sul margine interno in stampa.</li>
-        </ul>
-
-        <p><strong>Segni:</strong></p>
-        <ul>
-          <li><strong>SOLO segni di taglio</strong> (crop marks).</li>
-          <li><strong>NO</strong> crocini di registro.</li>
-          <li><strong>NO</strong> indicatori pagina al vivo / color bars / info stampa / altre “robe”.</li>
-          <li>Se aggiungi altri segni, <strong>il tool può interpretare male gli ingombri</strong> e non funziona correttamente.</li>
-        </ul>
-
-        <p><strong>NO bullshit:</strong> SOLO segni di taglio. Altrimenti il tool si incazza.</p>
-      </div>
+      <p><strong>NO bullshit.</strong><br>
+      Altrimenti il tool non funziona.</p>
     </div>
   </div>
+</div>
 
-  <script>
-    const pt = (mm) => (mm * 72) / 25.4;
-    const ptToMm = (p) => (p * 25.4) / 72;
+<script>
+  const infoBtn = document.getElementById('infoBtn');
+  const infoOverlay = document.getElementById('infoOverlay');
+  const infoClose = document.getElementById('infoClose');
 
-    // ✅ CROP “INNER MARGIN” per PDF con abbondanze/segni (InDesign)
-    // 0.3 inch = 21.6 pt = 7.62 mm
-    const INNER_CROP_INCH = 0.3;
-    const INNER_CROP_PT = INNER_CROP_INCH * 72;      // 21.6 pt
-    const INNER_CROP_MM = INNER_CROP_INCH * 25.4;    // 7.62 mm
+  infoBtn.addEventListener('click', () => {
+    infoOverlay.classList.remove('hidden');
+  });
 
-    let loadedPdf = null;
+  infoClose.addEventListener('click', () => {
+    infoOverlay.classList.add('hidden');
+  });
 
-    const sheetSelect = document.getElementById('sheetSelect');
-    const customW = document.getElementById('customW');
-    const customH = document.getElementById('customH');
-    const customWCol = document.getElementById('customWCol');
-    const customHCol = document.getElementById('customHCol');
-
-    const pdfFile = document.getElementById('pdfFile');
-    const uploadZone = document.getElementById('uploadZone');
-    const sigInput = document.getElementById('sigInput');
-    const runBtn = document.getElementById('runBtn');
-    const monitor = document.getElementById('monitor');
-
-    function setCustomVisibility() {
-      const isCustom = sheetSelect.value === 'custom';
-      customWCol.classList.toggle('hidden', !isCustom);
-      customHCol.classList.toggle('hidden', !isCustom);
-      checkFit();
-    }
-
-    function getSheetMm() {
-      if (sheetSelect.value === 'custom') {
-        const w = parseFloat(customW.value) || 0;
-        const h = parseFloat(customH.value) || 0;
-        return [w, h];
-      }
-      return sheetSelect.value.split(',').map(Number);
-    }
-
-    // Monitor: controlla se il foglio contiene l’imposizione 2-up (left+right)
-    // ✅ ora considera anche il crop interno 0.3"
-    function checkFit() {
-      if (!loadedPdf) {
-        monitor.textContent = "> Carica un PDF per iniziare...";
-        monitor.className = "";
-        return;
-      }
-
-      const [sW, sH] = getSheetMm();
-      const firstPage = loadedPdf.getPages()[0];
-      const pW = ptToMm(firstPage.getWidth());
-      const pH = ptToMm(firstPage.getHeight());
-
-      // 2-up: ogni pagina perde INNER_CROP_MM sul margine interno (quindi -7.62mm)
-      const placedW = Math.max(0, pW - INNER_CROP_MM);
-      const reqW = placedW * 2;
-      const reqH = pH;
-
-      if (sW >= reqW && sH >= reqH) {
-        monitor.innerHTML = `> STATO: OK | Ingombro: ${reqW.toFixed(1)}×${reqH.toFixed(1)} mm (crop ${INNER_CROP_MM.toFixed(2)}mm)`;
-        monitor.className = "monitor-ok";
-      } else {
-        monitor.innerHTML = `> ERRORE: FOGLIO PICCOLO | Min: ${reqW.toFixed(1)}×${reqH.toFixed(1)} mm (crop ${INNER_CROP_MM.toFixed(2)}mm)`;
-        monitor.className = "monitor-error";
-      }
-    }
-
-    function autoCalculateSignatures() {
-      if (!loadedPdf) return;
-
-      let total = loadedPdf.getPageCount();
-      if (total % 4 !== 0) total = Math.ceil(total / 4) * 4;
-
-      const plan = [];
-      let tempTotal = total;
-
-      while (tempTotal >= 16) {
-        plan.push(16);
-        tempTotal -= 16;
-      }
-
-      if (tempTotal > 0) {
-        if (plan.length > 0) plan.splice(plan.length - 1, 0, tempTotal);
-        else plan.push(tempTotal);
-      }
-
-      sigInput.value = plan.join(', ');
-    }
-
-    sheetSelect.addEventListener('change', setCustomVisibility);
-    customW.addEventListener('input', checkFit);
-    customH.addEventListener('input', checkFit);
-
-    uploadZone.addEventListener('click', () => pdfFile.click());
-
-    pdfFile.addEventListener('change', async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-
-      const arrayBuffer = await file.arrayBuffer();
-      loadedPdf = await PDFLib.PDFDocument.load(arrayBuffer);
-
-      autoCalculateSignatures();
-      checkFit();
-    });
-
-    runBtn.addEventListener('click', async () => {
-      if (!loadedPdf) return alert("LOAD THE HEAT.");
-
-      try {
-        const { PDFDocument } = PDFLib;
-        const outDoc = await PDFDocument.create();
-
-        const [sW_mm, sH_mm] = getSheetMm();
-        const sheetW = pt(sW_mm), sheetH = pt(sH_mm);
-
-        const sigPlan = sigInput.value
-          .split(',')
-          .map(n => parseInt(n.trim(), 10))
-          .filter(n => Number.isFinite(n) && n > 0);
-
-        if (sigPlan.length === 0) return alert("INVALID SIGNATURE SEQUENCE.");
-
-        const srcPages = loadedPdf.getPages();
-
-        // ✅ CREIAMO DUE SET DI PAGINE “EMBED”:
-        // - per quando una pagina va a SINISTRA: tagliamo il bordo DESTRO (margine interno)
-        // - per quando una pagina va a DESTRA:  tagliamo il bordo SINISTRO (margine interno)
-        const bboxesForLeftPlacement = srcPages.map(p => {
-          const w = p.getWidth();
-          const h = p.getHeight();
-          const crop = Math.min(INNER_CROP_PT, w); // sicurezza
-          return { left: 0, bottom: 0, right: w - crop, top: h };
-        });
-
-        const bboxesForRightPlacement = srcPages.map(p => {
-          const w = p.getWidth();
-          const h = p.getHeight();
-          const crop = Math.min(INNER_CROP_PT, w); // sicurezza
-          return { left: crop, bottom: 0, right: w, top: h };
-        });
-
-        const embeddedLeft = await outDoc.embedPages(srcPages, bboxesForLeftPlacement);
-        const embeddedRight = await outDoc.embedPages(srcPages, bboxesForRightPlacement);
-
-        let totalProcessed = 0;
-
-        for (const sigSize of sigPlan) {
-          for (let i = 0; i < sigSize / 2; i++) {
-            const sheet = outDoc.addPage([sheetW, sheetH]);
-
-            const lIdx = (i % 2 === 0)
-              ? (totalProcessed + sigSize) - 1 - i
-              : totalProcessed + i;
-
-            const rIdx = (i % 2 === 0)
-              ? totalProcessed + i
-              : (totalProcessed + sigSize) - 1 - i;
-
-            const draw = (idx, side) => {
-              if (idx >= srcPages.length) return;
-
-              // ✅ scegliamo l’embed corretto in base al lato,
-              // così il crop è sempre sul margine interno
-              const p = (side === 'left') ? embeddedLeft[idx] : embeddedRight[idx];
-
-              const x = (side === 'left')
-                ? (sheetW / 2) - p.width
-                : (sheetW / 2);
-
-              const y = (sheetH - p.height) / 2;
-
-              sheet.drawPage(p, { x, y, width: p.width, height: p.height });
-            };
-
-            draw(lIdx, 'left');
-            draw(rIdx, 'right');
-          }
-
-          totalProcessed += sigSize;
-        }
-
-        const pdfBytes = await outDoc.save();
-        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-        window.open(URL.createObjectURL(blob));
-      } catch (e) {
-        console.error(e);
-        alert("SOMETHING BROKE. CHECK CONSOLE.");
-      }
-    });
-
-    // ---------- INFO MODAL ----------
-    const infoBtn = document.getElementById('infoBtn');
-    const infoOverlay = document.getElementById('infoOverlay');
-    const infoClose = document.getElementById('infoClose');
-
-    function openInfo() {
-      infoOverlay.classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
-      infoClose.focus();
-    }
-
-    function closeInfo() {
+  infoOverlay.addEventListener('click', (e) => {
+    if (e.target === infoOverlay) {
       infoOverlay.classList.add('hidden');
-      document.body.style.overflow = '';
-      infoBtn.focus();
     }
+  });
 
-    infoBtn.addEventListener('click', openInfo);
-    infoClose.addEventListener('click', closeInfo);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === "Escape") {
+      infoOverlay.classList.add('hidden');
+    }
+  });
+</script>
 
-    // chiudi cliccando fuori dal modal
-    infoOverlay.addEventListener('click', (e) => {
-      if (e.target === infoOverlay) closeInfo();
-    });
-
-    // chiudi con ESC
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !infoOverlay.classList.contains('hidden')) {
-        closeInfo();
-      }
-    });
-
-    // init
-    setCustomVisibility();
-    checkFit();
-  </script>
 </body>
 </html>
