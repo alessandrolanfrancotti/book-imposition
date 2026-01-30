@@ -80,6 +80,36 @@
   pointer-events: none;
 }
 
+/* ---------- AUDIO BUTTON ---------- */
+.audio-btn{
+  position: fixed;
+  top: 12px;
+  left: 12px;
+
+  width: min(140px, 22vw);
+  height: min(140px, 22vw);
+
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  z-index: 6000;
+  display: grid;
+  place-items: center;
+
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.audio-btn img{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
 
 
 
@@ -398,6 +428,13 @@
   <button id="infoBtn" class="info-btn" type="button" aria-haspopup="dialog" aria-controls="infoOverlay" aria-label="Info export PDF">
   <img src="INFO.png" alt="Info">
 </button>
+<button id="audioBtn" class="audio-btn" type="button" aria-label="Play music">
+  <img src="CD-ROM.png" alt="Play music">
+</button>
+
+<audio id="bgAudio" src="WizKhalifa-SayYeah.mp3"></audio>
+
+  
   <div class="panel">
 
     <!-- INFO BUTTON -->
@@ -738,6 +775,23 @@
     // init
     setCustomVisibility();
     checkFit();
+
+    // ---------- AUDIO BUTTON ----------
+const audioBtn = document.getElementById('audioBtn');
+const bgAudio = document.getElementById('bgAudio');
+
+let isPlaying = false;
+
+audioBtn.addEventListener('click', () => {
+  if (!isPlaying) {
+    bgAudio.play();
+    isPlaying = true;
+  } else {
+    bgAudio.pause();
+    isPlaying = false;
+  }
+});
+
   </script>
 </body>
 </html>
