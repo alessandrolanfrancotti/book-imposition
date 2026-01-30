@@ -111,6 +111,20 @@
   pointer-events: none;
 }
 
+    /* ---------- CD SPIN + GLOW ---------- */
+
+.audio-btn.playing img{
+  animation: spin 2s linear infinite;
+  filter: drop-shadow(0 0 12px rgba(0,255,255,0.9))
+          drop-shadow(0 0 25px rgba(0,255,255,0.6))
+          drop-shadow(0 0 40px rgba(0,255,255,0.4));
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 
 
     /* ---------- OVERLAY / MODAL ---------- */
@@ -777,6 +791,7 @@
     checkFit();
 
     // ---------- AUDIO BUTTON ----------
+// ---------- AUDIO BUTTON ----------
 const audioBtn = document.getElementById('audioBtn');
 const bgAudio = document.getElementById('bgAudio');
 
@@ -786,11 +801,15 @@ audioBtn.addEventListener('click', () => {
   if (!isPlaying) {
     bgAudio.play();
     isPlaying = true;
+    audioBtn.classList.add('playing');
   } else {
     bgAudio.pause();
     isPlaying = false;
+    audioBtn.classList.remove('playing');
   }
 });
+
+    
 
   </script>
 </body>
