@@ -226,59 +226,59 @@
   .terminal-pic{ flex: 0 0 auto; }
   .terminal-pic img{ width: 120px; }
 }
-/* ---------- MOBILE RESPONSIVE PATCH ---------- */
+/* ---------- MOBILE: keep vibe, scroll only the panel ---------- */
 @media (max-width: 520px) {
-  html, body {
-    overflow: auto;
+  /* i bottoni rispettano il notch / safe area */
+  .info-btn {
+    top: calc(10px + env(safe-area-inset-top));
+    right: calc(10px + env(safe-area-inset-right));
+    width: min(92px, 20vw);
+    height: min(92px, 20vw);
   }
 
-  body {
-    align-items: flex-start;
-    padding: 12px;
-  }
-
-  .panel {
-    max-height: none;
-    width: 100%;
-    max-width: 100%;
-    padding: 16px;
-    margin-top: 64px;
-  }
-
-  .info-btn,
   .audio-btn {
-    width: min(72px, 18vw);
-    height: min(72px, 18vw);
-    top: 10px;
+    top: calc(10px + env(safe-area-inset-top));
+    left: calc(10px + env(safe-area-inset-left));
+    width: min(92px, 20vw);
+    height: min(92px, 20vw);
   }
 
-  .info-btn { right: 10px; }
-  .audio-btn { left: 10px; }
+  /* il pannello resta centrato ma diventa scrollabile dentro */
+  .panel {
+    padding: 16px;
+    max-height: calc(100dvh - 24px);
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* compatta un pelo alcune cose senza cambiare layout */
+  .section {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
 
   .logo-wrap {
-    height: 110px;
-    margin-bottom: 10px;
+    height: 120px;
+    margin-bottom: 12px;
   }
 
   #monitor {
+    padding: 10px;
     font-size: 0.75rem;
-    padding: 10px;
-  }
-
-  input, select {
-    padding: 10px;
-    font-size: 1rem;
-  }
-
-  .credits, .concept {
-    font-size: 0.65rem;
-    opacity: 0.75;
-  }
-
-  .concept {
-    max-width: 150px;
   }
 }
+
+/* opzionale: se lo schermo è BASSO (iphone landscape), stessa logica */
+@media (max-height: 520px) {
+  .panel {
+    max-height: calc(100dvh - 16px);
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .logo-wrap { height: 95px; }
+}
+
 
 
     /* ---------- LOGO (cover) ---------- */
