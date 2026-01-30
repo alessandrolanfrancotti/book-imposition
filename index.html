@@ -226,6 +226,59 @@
   .terminal-pic{ flex: 0 0 auto; }
   .terminal-pic img{ width: 120px; }
 }
+/* ---------- MOBILE RESPONSIVE PATCH ---------- */
+@media (max-width: 520px) {
+  html, body {
+    overflow: auto;
+  }
+
+  body {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .panel {
+    max-height: none;
+    width: 100%;
+    max-width: 100%;
+    padding: 16px;
+    margin-top: 64px;
+  }
+
+  .info-btn,
+  .audio-btn {
+    width: min(72px, 18vw);
+    height: min(72px, 18vw);
+    top: 10px;
+  }
+
+  .info-btn { right: 10px; }
+  .audio-btn { left: 10px; }
+
+  .logo-wrap {
+    height: 110px;
+    margin-bottom: 10px;
+  }
+
+  #monitor {
+    font-size: 0.75rem;
+    padding: 10px;
+  }
+
+  input, select {
+    padding: 10px;
+    font-size: 1rem;
+  }
+
+  .credits, .concept {
+    font-size: 0.65rem;
+    opacity: 0.75;
+  }
+
+  .concept {
+    max-width: 150px;
+  }
+}
 
 
     /* ---------- LOGO (cover) ---------- */
