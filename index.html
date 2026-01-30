@@ -80,6 +80,78 @@
   pointer-events: none;
 }
 
+    /* ---------- TOP-RIGHT ICON SIZES (shared) ---------- */
+:root{
+  --corner-pad: 12px;
+  --corner-size: min(140px, 22vw);
+  --corner-gap: 8px;
+}
+
+/* aggiorna (o lascia) la size usando la variabile */
+.info-btn{
+  width: var(--corner-size);
+  height: var(--corner-size);
+}
+
+/* ---------- TUTORIAL BUTTON (left of INFO) ---------- */
+.tutorial-btn{
+  position: fixed;
+  top: var(--corner-pad);
+  right: calc(var(--corner-pad) + var(--corner-size) + var(--corner-gap));
+
+  width: var(--corner-size);
+  height: var(--corner-size);
+
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  z-index: 6000;
+  display: grid;
+  place-items: center;
+
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.tutorial-btn:focus,
+.tutorial-btn:focus-visible,
+.tutorial-btn:active{
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.tutorial-btn img{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+
+/* ---------- VIDEO MODAL ---------- */
+.video-wrap{
+  width: min(860px, 92vw);
+}
+
+.video-16x9{
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 */
+  border: 2px solid #333;
+}
+
+.video-16x9 iframe{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+
 /* ---------- AUDIO BUTTON ---------- */
 .audio-btn{
   position: fixed;
@@ -466,6 +538,11 @@
   <button id="infoBtn" class="info-btn" type="button" aria-haspopup="dialog" aria-controls="infoOverlay" aria-label="Info export PDF">
   <img src="INFO.png" alt="Info">
 </button>
+  <button id="tutorialBtn" class="tutorial-btn" type="button"
+  aria-haspopup="dialog" aria-controls="tutorialOverlay" aria-label="Tutorial">
+  <img src="TUTORIAL.png" alt="Tutorial">
+</button>
+
 <button id="audioBtn" class="audio-btn" type="button" aria-label="Play music">
   <img src="CD-ROM.png" alt="Play music">
 </button>
@@ -585,6 +662,26 @@
 
     </div>
   </div>
+
+  
+<!-- TUTORIAL OVERLAY -->
+<div id="tutorialOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Tutorial video">
+  <div class="modal video-wrap" role="document">
+    <button id="tutorialClose" class="modal-close" type="button" aria-label="Close">×</button>
+
+    <h2>TUTORIAL</h2>
+
+    <div class="video-16x9">
+      <iframe
+        id="tutorialFrame"
+        src="https://www.youtube.com/embed/Gnbyt7bjC9c"
+        title="Lil Imposer Tutorial"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen>
+      </iframe>
+    </div>
+  </div>
+</div>
 
   <script>
     const pt = (mm) => (mm * 72) / 25.4;
@@ -813,8 +910,46 @@
     // init
     setCustomVisibility();
     checkFit();
+    // ---------- TUTORIAL MODAL ----------
+const tutorialBtn = document.getElementById('tutorialBtn');
+const tutorialOverlay = document.getElementById('tutorialOverlay');
+const tutorialClose = document.getElementById('tutorialClose');
+const tutorialFrame = document.getElementById('tutorialFrame');
 
-    // ---------- AUDIO BUTTON ----------
+const tutorialSrc = "https://www.youtube.com/embed/Gnbyt7bjC9c";
+const tutorialSrcAutoplay = "https://www.youtube.com/embed/Gnbyt7bjC9c?autoplay=1";
+
+function openTutorial() {
+  tutorialOverlay.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  // autoplay funziona perché è user-gesture (click)
+  tutorialFrame.src = tutorialSrcAutoplay;
+  tutorialClose.focus();
+}
+
+function closeTutorial() {
+  tutorialOverlay.classList.add('hidden');
+  document.body.style.overflow = '';
+  // stoppa il video davvero (scarica iframe)
+  tutorialFrame.src = tutorialSrc;
+  tutorialBtn.focus();
+}
+
+tutorialBtn.addEventListener('click', openTutorial);
+tutorialClose.addEventListener('click', closeTutorial);
+
+tutorialOverlay.addEventListener('click', (e) => {
+  if (e.target === tutorialOverlay) closeTutorial();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !tutorialOverlay.classList.contains('hidden')) {
+    closeTutorial();
+  }
+});
+
+
+
 // ---------- AUDIO BUTTON ----------
 const audioBtn = document.getElementById('audioBtn');
 const bgAudio = document.getElementById('bgAudio');
