@@ -57,19 +57,19 @@
   z-index: 6000;
   display: grid;
   place-items: center;
-  .info-btn:focus,
+
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.info-btn:focus,
+.info-btn:focus-visible,
 .info-btn:active {
-  outline: none;
+  outline: none !important;
+  box-shadow: none !important;
 }
-}
-
-
-.info-btn img{
-  width: 120px;
-  height: 120px;
-  display: block;
-}
-
 
     /* ---------- OVERLAY / MODAL ---------- */
     .overlay{
