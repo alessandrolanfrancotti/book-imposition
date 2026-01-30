@@ -226,58 +226,7 @@
   .terminal-pic{ flex: 0 0 auto; }
   .terminal-pic img{ width: 120px; }
 }
-/* ---------- MOBILE: keep vibe, scroll only the panel ---------- */
-@media (max-width: 520px) {
-  /* i bottoni rispettano il notch / safe area */
-  .info-btn {
-    top: calc(10px + env(safe-area-inset-top));
-    right: calc(10px + env(safe-area-inset-right));
-    width: min(92px, 20vw);
-    height: min(92px, 20vw);
-  }
 
-  .audio-btn {
-    top: calc(10px + env(safe-area-inset-top));
-    left: calc(10px + env(safe-area-inset-left));
-    width: min(92px, 20vw);
-    height: min(92px, 20vw);
-  }
-
-  /* il pannello resta centrato ma diventa scrollabile dentro */
-  .panel {
-    padding: 16px;
-    max-height: calc(100dvh - 24px);
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* compatta un pelo alcune cose senza cambiare layout */
-  .section {
-    padding: 12px;
-    margin-bottom: 12px;
-  }
-
-  .logo-wrap {
-    height: 120px;
-    margin-bottom: 12px;
-  }
-
-  #monitor {
-    padding: 10px;
-    font-size: 0.75rem;
-  }
-}
-
-/* opzionale: se lo schermo è BASSO (iphone landscape), stessa logica */
-@media (max-height: 520px) {
-  .panel {
-    max-height: calc(100dvh - 16px);
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .logo-wrap { height: 95px; }
-}
 
 
 
