@@ -726,30 +726,39 @@
     // Monitor: controlla se il foglio contiene l’imposizione 2-up (left+right)
     // ✅ ora considera anche il crop interno 0.3"
     function checkFit() {
-      if (!loadedPdf) {
-        monitor.textContent = "> Carica un PDF per iniziare...";
-        monitor.className = "";
-        return;
-      }
+  if (!loadedPdf) {
+    monitor.textContent = "> Carica un PDF per iniziare...";
+    monitor.className = "";
+    return;
+  }
 
-      const [sW, sH] = getSheetMm();
-      const firstPage = loadedPdf.getPages()[0];
-      const pW = ptToMm(firstPage.getWidth());
-      const pH = ptToMm(firstPage.getHeight());
+  // ✅ ERROR se pagine non multiple di 4
+  const pageCount = loadedPdf.getPageCount();
+  if (pageCount % 4 !== 0) {
+    const missing = 4 - (pageCount % 4);
+    monitor.innerHTML = `> ERRORE: PAGINE NON MULTIPLE DI 4 | Pagine: ${pageCount} (aggiungi ${missing} pagina/e bianca/che)`;
+    monitor.className = "monitor-error";
+    return;
+  }
 
-      // 2-up: ogni pagina perde INNER_CROP_MM sul margine interno (quindi -7.62mm)
-      const placedW = Math.max(0, pW - INNER_CROP_MM);
-      const reqW = placedW * 2;
-      const reqH = pH;
+  const [sW, sH] = getSheetMm();
+  const firstPage = loadedPdf.getPages()[0];
+  const pW = ptToMm(firstPage.getWidth());
+  const pH = ptToMm(firstPage.getHeight());
 
-      if (sW >= reqW && sH >= reqH) {
-        monitor.innerHTML = `> STATO: OK | Ingombro: ${reqW.toFixed(1)}×${reqH.toFixed(1)} mm (crop ${INNER_CROP_MM.toFixed(2)}mm)`;
-        monitor.className = "monitor-ok";
-      } else {
-        monitor.innerHTML = `> ERRORE: FOGLIO PICCOLO | Min: ${reqW.toFixed(1)}×${reqH.toFixed(1)} mm (crop ${INNER_CROP_MM.toFixed(2)}mm)`;
-        monitor.className = "monitor-error";
-      }
-    }
+  const placedW = Math.max(0, pW - INNER_CROP_MM);
+  const reqW = placedW * 2;
+  const reqH = pH;
+
+  if (sW >= reqW && sH >= reqH) {
+    monitor.innerHTML = `> STATO: OK | Ingombro: ${reqW.toFixed(1)}×${reqH.toFixed(1)} mm (crop ${INNER_CROP_MM.toFixed(2)}mm)`;
+    monitor.className = "monitor-ok";
+  } else {
+    monitor.innerHTML = `> ERRORE: FOGLIO PICCOLO | Min: ${reqW.toFixed(1)}×${reqH.toFixed(1)} mm (crop ${INNER_CROP_MM.toFixed(2)}mm)`;
+    monitor.className = "monitor-error";
+  }
+}
+
 
     function autoCalculateSignatures() {
       if (!loadedPdf) return;
