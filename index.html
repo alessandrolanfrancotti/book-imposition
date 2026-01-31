@@ -721,13 +721,15 @@ input[type="checkbox"]{
     const pt = (mm) => (mm * 72) / 25.4;
 const ptToMm = (p) => (p * 25.4) / 72;
 
+const marksToggle = document.getElementById('marksToggle');
+
 function getInnerCropPt() {
-  return marksToggle?.checked ? INNER_CROP_PT : 0;
+  return (marksToggle && marksToggle.checked) ? INNER_CROP_PT_MAX : 0;
+}
+function getInnerCropMm() {
+  return (marksToggle && marksToggle.checked) ? INNER_CROP_MM_MAX : 0;
 }
 
-function getInnerCropMm() {
-  return marksToggle?.checked ? INNER_CROP_MM : 0;
-}
 
 
     // ✅ CROP “INNER MARGIN” per PDF con abbondanze/segni (InDesign)
