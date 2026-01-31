@@ -654,7 +654,9 @@
       const reqW = placedW * 2;
       const reqH = pH;
 
-      if (sW >= reqW && sH >= reqH) {
+      const EPS = 0.5; // tolleranza in mm
+
+      if (sW + EPS >= reqW && sH + EPS >= reqH) {
         monitor.innerHTML = `> STATUS: OK | Footprint: ${reqW.toFixed(1)}×${reqH.toFixed(1)} mm (inner crop ${innerCropMm.toFixed(2)}mm)`;
         monitor.className = "monitor-ok";
       } else {
