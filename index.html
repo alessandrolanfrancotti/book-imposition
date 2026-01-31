@@ -718,9 +718,15 @@ input[type="checkbox"]{
 </div>
 
   <script>
-    const pt = (mm) => (mm * 72) / 25.4;
+const pt = (mm) => (mm * 72) / 25.4;
 const ptToMm = (p) => (p * 25.4) / 72;
 
+// ✅ INNER CROP (bleed + crop marks)
+const INNER_CROP_INCH = 0.3; // 7.62mm
+const INNER_CROP_PT_MAX = INNER_CROP_INCH * 72;
+const INNER_CROP_MM_MAX = INNER_CROP_INCH * 25.4;
+
+// checkbox
 const marksToggle = document.getElementById('marksToggle');
 
 function getInnerCropPt() {
@@ -729,6 +735,7 @@ function getInnerCropPt() {
 function getInnerCropMm() {
   return (marksToggle && marksToggle.checked) ? INNER_CROP_MM_MAX : 0;
 }
+
 
 
 
@@ -752,9 +759,6 @@ function getInnerCropMm() {
     const sigInput = document.getElementById('sigInput');
     const runBtn = document.getElementById('runBtn');
     const monitor = document.getElementById('monitor');
-
-    const marksToggle = document.getElementById('marksToggle');
-
 
     function setCustomVisibility() {
       const isCustom = sheetSelect.value === 'custom';
