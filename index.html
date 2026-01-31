@@ -494,6 +494,44 @@
       text-transform: none;
     }
 
+    /* ---------- SIGNATURES ROW: LABEL + CHECKBOX (half/half) ---------- */
+.sig-row{
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sig-row > label:first-child{
+  flex: 1;
+}
+
+/* checkbox label on the right half (starts from center, aligned left) */
+.marks-label{
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  font-family: "Courier New", monospace;
+  font-size: 0.75rem;
+  color: #888;
+  letter-spacing: 0.5px;
+  text-transform: none;
+}
+
+/* keep checkboxes normal (avoid full-width input styling) */
+input[type="checkbox"]{
+  width: auto !important;
+  padding: 0 !important;
+  border: none !important;
+  border-image: none !important;
+  background: transparent !important;
+  outline: none !important;
+  vertical-align: middle;
+  margin: 0;
+}
+
+
     
   </style>
 </head>
@@ -590,10 +628,20 @@
     </div>
 
     <div class="section">
-      <!--<span class="section-title">Signatures Sequence</span>-->
-      <label>SIGNATURES SEQUENCE</label>
-      <input type="text" id="sigInput" placeholder="SEQUENCE" />
-    </div>
+  <!--<span class="section-title">Signatures Sequence</span>-->
+
+  <div class="sig-row">
+    <label>SIGNATURES SEQUENCE</label>
+
+    <label class="marks-label">
+      <input type="checkbox" id="marksToggle" checked>
+      My PDF has bleed and crop marks
+    </label>
+  </div>
+
+  <input type="text" id="sigInput" placeholder="SEQUENCE" />
+</div>
+
 
     <!-- UPLOAD -->
     <div class="upload-zone" id="uploadZone">
@@ -671,13 +719,23 @@
 
   <script>
     const pt = (mm) => (mm * 72) / 25.4;
-    const ptToMm = (p) => (p * 25.4) / 72;
+const ptToMm = (p) => (p * 25.4) / 72;
+
+function getInnerCropPt() {
+  return marksToggle?.checked ? INNER_CROP_PT : 0;
+}
+
+function getInnerCropMm() {
+  return marksToggle?.checked ? INNER_CROP_MM : 0;
+}
+
 
     // ✅ CROP “INNER MARGIN” per PDF con abbondanze/segni (InDesign)
     // 0.3 inch = 21.6 pt = 7.62 mm
-    const INNER_CROP_INCH = 0.3;
-    const INNER_CROP_PT = INNER_CROP_INCH * 72;      // 21.6 pt
-    const INNER_CROP_MM = INNER_CROP_INCH * 25.4;    // 7.62 mm
+    const INNER_CROP_INCH = 0.3; // 7.62mm
+    const INNER_CROP_PT_MAX = INNER_CROP_INCH * 72;
+    const INNER_CROP_MM_MAX = INNER_CROP_INCH * 25.4;
+
 
     let loadedPdf = null;
 
@@ -692,6 +750,9 @@
     const sigInput = document.getElementById('sigInput');
     const runBtn = document.getElementById('runBtn');
     const monitor = document.getElementById('monitor');
+
+    const marksToggle = document.getElementById('marksToggle');
+
 
     function setCustomVisibility() {
       const isCustom = sheetSelect.value === 'custom';
@@ -733,15 +794,17 @@
   const pW = ptToMm(firstPage.getWidth());
   const pH = ptToMm(firstPage.getHeight());
 
-  const placedW = Math.max(0, pW - INNER_CROP_MM);
+  const innerCropMm = getInnerCropMm();
+const placedW = Math.max(0, pW - innerCropMm);
+
   const reqW = placedW * 2;
   const reqH = pH;
 
   if (sW >= reqW && sH >= reqH) {
-    monitor.innerHTML = `> STATUS: OK | Footprint: ${reqW.toFixed(1)}×${reqH.toFixed(1)} mm (crop ${INNER_CROP_MM.toFixed(2)}mm)`;
+    monitor.innerHTML = `> STATUS: OK | Footprint: ${reqW.toFixed(1)}×${reqH.toFixed(1)} mm (inner crop ${innerCropMm.toFixed(2)}mm)`;
     monitor.className = "monitor-ok";
   } else {
-    monitor.innerHTML = `> ERROR: SHEET TOO SMALL | Min: ${reqW.toFixed(1)}×${reqH.toFixed(1)} mm (crop ${INNER_CROP_MM.toFixed(2)}mm)`;
+    monitor.innerHTML = `> ERROR: SHEET TOO SMALL | Min: ${reqW.toFixed(1)}×${reqH.toFixed(1)} mm (inner crop ${innerCropMm.toFixed(2)}mm)`;
     monitor.className = "monitor-error";
   }
 }
@@ -772,6 +835,8 @@
     sheetSelect.addEventListener('change', setCustomVisibility);
     customW.addEventListener('input', checkFit);
     customH.addEventListener('input', checkFit);
+    marksToggle.addEventListener('change', checkFit);
+
 
     uploadZone.addEventListener('click', () => pdfFile.click());
 
@@ -792,6 +857,8 @@
       try {
         const { PDFDocument } = PDFLib;
         const outDoc = await PDFDocument.create();
+        const innerCropPt = getInnerCropPt();
+
 
         const [sW_mm, sH_mm] = getSheetMm();
         const sheetW = pt(sW_mm), sheetH = pt(sH_mm);
@@ -811,14 +878,15 @@
         const bboxesForLeftPlacement = srcPages.map(p => {
           const w = p.getWidth();
           const h = p.getHeight();
-          const crop = Math.min(INNER_CROP_PT, w); // sicurezza
+          const crop = Math.min(innerCropPt, w); // safety
           return { left: 0, bottom: 0, right: w - crop, top: h };
         });
+
 
         const bboxesForRightPlacement = srcPages.map(p => {
           const w = p.getWidth();
           const h = p.getHeight();
-          const crop = Math.min(INNER_CROP_PT, w); // sicurezza
+          const crop = Math.min(innerCropPt, w); // safety
           return { left: crop, bottom: 0, right: w, top: h };
         });
 
